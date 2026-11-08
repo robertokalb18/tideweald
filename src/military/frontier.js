@@ -109,7 +109,7 @@ var THREAT_ADVICE = {
       'At least 25 clean freshwater tiles reduce losses by 65%. Keep rivers and ponds across the island.',
     gale: 'A lighthouse prevents 65% of gale losses. Each granary adds 15%, up to 85% total protection.',
     blizzard:
-      'Keep at least three days of firewood in your stores for 65% protection. A cloister garden adds 20%.',
+      'Keep at least three days of firewood in your stores for 65% protection. A walled garden adds 20%.',
   },
   RAID_CURVE = [
     [0, 10],
@@ -370,7 +370,7 @@ function stepFrontier(e) {
           raid: 'Red Sail raiders',
           flood: 'River flood',
           wildfire: 'Dry lightning',
-          gale: 'North Sea gale',
+          gale: 'Atlantic gale',
           blizzard: 'Deep frost',
         }[s];
     ((t.pending = {

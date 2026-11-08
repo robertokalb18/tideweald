@@ -113,7 +113,7 @@ function production(e, t, a = !1) {
     let p = servicesNear(e, t);
     ((c = 0.8 + 0.6 * p),
       p < 3 &&
-        (d = `Rent ${(0.8 + 0.6 * p).toFixed(1)} gold/day \xB7 a well, market and chapel within six tiles each add 0.6`));
+        (d = `Rent ${(0.8 + 0.6 * p).toFixed(1)} gold/day \xB7 a well, market and hof within six tiles each add 0.6`));
   }
   if ((t.kind === 'farm' && hasLandmark(e, 'windmill') && (c *= 1.25), WORKSHOPS[t.kind])) {
     let p = WORKSHOPS[t.kind];

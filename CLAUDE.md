@@ -12,4 +12,5 @@ New rules from Milestone 1:
 - `npm test` must pass before publishing. The golden fixtures in `tests/fixtures` came from the live v16.11 game; do not regenerate them to make a failing test pass.
 - Keep the simulation fixed-step: change the world only inside `step()` calls made by `advanceWorld`.
 - Data modules (catalogs, chapter text) must not import from modules that import them back. A cycle once made `CATALOG` undefined when the game was entered from another module.
-- Decided on 8 November 2026: the setting moves to Norse settlers of 985 (Milestone 1b, "Landfall 985"). Offline hosting is deferred.
+- The setting is Norse settlers of 985 (Milestone 1b, done in v16.12). Keep new text in that world: no chapels, cogs, guild charters or later-medieval terms. Offline hosting is deferred.
+- Next milestone: 2, "Raids you can fight" (see the audit doc). Its gate needs human playtesters.

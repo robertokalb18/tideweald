@@ -31,7 +31,7 @@ var CHAPTERS = [
       title: 'A foothold',
       period: 'The island crossing',
       voice: 'Mara \xB7 expedition leader',
-      text: 'Around the year 1250, our ships leave the Weser marshes for a rumored island off the Frisian coast. A gale separates the ships. Twelve families wait with Skipper Elin while we find a safe harbor. Grow the first harvest and light the way home.',
+      text: 'Around 985, twenty-five ships follow Erik the Red west from Iceland. A gale scatters the fleet, and ours is driven south to a wooded island no saga names. Twelve families wait with Skipper Elin while we find a safe harbor. Grow the first harvest and light the way home.',
       hint: 'Build a farm, add a pond or river beside it, then collect 30 food. A farm waters its own patch at first; fresh water keeps it productive.',
       reward: 80,
     },
@@ -48,7 +48,7 @@ var CHAPTERS = [
       period: 'Before the fleet returns',
       voice: 'Mara \xB7 expedition leader',
       text: 'Elin\u2019s sail is on the horizon. We can still return east\u2014or make a promise here. Raise homes around a market, where strangers can become neighbors and every family has a place.',
-      hint: 'Build three cottages and a market. A quarry near boulders or a mountain will provide the 15 stone we need.',
+      hint: 'Build three longhouses and a market. A quarry near boulders or a mountain will provide the 15 stone we need.',
       reward: 160,
     },
     {
@@ -56,7 +56,7 @@ var CHAPTERS = [
       period: 'Fleet \xB7 by Day 30',
       voice: 'Skipper Elin \xB7 the Wayfarer',
       text: 'The fleet survived, but the northern gales are coming. On Day 30 I will attempt the passage. Let the waiting families see smoke from their own hearths\u2014and food enough to believe they can stay.',
-      hint: 'Stock the harbor with 60 food, 20 timber, and 15 stone. Keep three safe cottages and three healthy mature trees. The fleet sails as soon as everything is ready, from Day 12, and no later than Day 30.',
+      hint: 'Stock the harbor with 60 food, 20 timber, and 15 stone. Keep three safe longhouses and three healthy mature trees. The fleet sails as soon as everything is ready, from Day 12, and no later than Day 30.',
       reward: 350,
     },
     ...STORY_CHAPTERS,
@@ -103,7 +103,7 @@ function campaignObjectives(e, t = e.story.chapter) {
     n = (u, d, m) => ({ label: u, value: Math.min(m, Math.floor(d)), target: m, done: d >= m });
   if (t === 0)
     return [
-      n('Build a wheat farm', a('farm'), 1),
+      n('Build a barley farm', a('farm'), 1),
       n('Freshwater tiles', e.cells.filter((u) => u.land && u.pond).length, 6),
       n('Collect food', e.story.collected.food, 30),
     ];
@@ -115,7 +115,7 @@ function campaignObjectives(e, t = e.story.chapter) {
     ];
   if (t === 2)
     return [
-      n('Build cottages', a('cottage'), 3),
+      n('Build longhouses', a('cottage'), 3),
       n('Build a market', a('market'), 1),
       n('Collect stone', e.story.collected.stone, 15),
     ];
@@ -124,7 +124,7 @@ function campaignObjectives(e, t = e.story.chapter) {
       n('Food set aside', e.story.reserves.food, 60),
       n('Timber set aside', e.story.reserves.timber, 20),
       n('Stone set aside', e.story.reserves.stone, 15),
-      n('Safe cottages', safeCottages(e), 3),
+      n('Safe longhouses', safeCottages(e), 3),
       n('Healthy mature trees', matureTrees(e), 3),
     ];
   let r = currentChapter(e),

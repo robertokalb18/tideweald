@@ -72,7 +72,7 @@ function worldShell(e) {
     nextWeather: 1.5,
     seed: 284711,
     nextId: 1,
-    message: '900 gold to begin. Build a wheat farm, collect food, and trade it for gold.',
+    message: '900 gold to begin. Build a barley farm, collect food, and trade it for gold.',
     noticeId: 0,
     placements: 0,
   };

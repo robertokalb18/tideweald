@@ -458,7 +458,7 @@ function Soundtrack() {
                 (0, jsxRuntime.jsx)('summary', { children: 'Music sources & MIDI downloads' }),
                 (0, jsxRuntime.jsxs)('p', {
                   children: [
-                    'Existing Renaissance and early-1600s compositions (c. 1470\u20131612), realized from complete published scores. Instruments, tempo and exact repetitions vary; no harmony has been added. These pieces accompany a fictional 13th-century North Sea world and were written centuries later. Fifteen ',
+                    'Existing Renaissance and early-1600s compositions (c. 1470\u20131612), realized from complete published scores. Instruments, tempo and exact repetitions vary; no harmony has been added. These pieces accompany a fictional Norse world of the 980s and were written centuries later. Fifteen ',
                     (0, jsxRuntime.jsx)('a', {
                       href: 'https://www.mutopiaproject.org/',
                       target: '_blank',

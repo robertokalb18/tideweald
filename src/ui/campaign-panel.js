@@ -228,7 +228,7 @@ function CampaignPanel({
             }),
             (0, jsxRuntime.jsx)('p', {
               children:
-                'Inspired by the 13th-century settlers who diked the North Sea marshes, your fictional fleet must build a new home. Reunite by Day 30, endure four seasons, guard the harbor, and forge a covenant across 48 chapters.',
+                'Inspired by the Norse crossing of 985, when twenty-five ships sailed west with Erik the Red and only fourteen arrived, your fictional fleet must build a new home. Reunite by Day 30, endure four seasons, guard the harbor, and forge a covenant across 48 chapters.',
             }),
             (0, jsxRuntime.jsxs)('div', {
               className: 'briefing-forecast',
@@ -521,7 +521,7 @@ function CampaignPanel({
                                   : (0, jsxRuntime.jsx)('p', {
                                       children: m
                                         ? `Ready. The ship arrives ${h < 12 ? 'on Day 12' : 'within the day'}.`
-                                        : 'Prepare the reserves, cottages, and forest for the next passage.',
+                                        : 'Prepare the reserves, longhouses, and forest for the next passage.',
                                     }),
                                 (0, jsxRuntime.jsx)('button', {
                                   onClick: () => {
@@ -674,12 +674,12 @@ function CampaignPanel({
                 (0, jsxRuntime.jsx)('summary', { children: 'The real settlers behind the story' }),
                 (0, jsxRuntime.jsxs)('p', {
                   children: [
-                    'From the 12th century, Frisian, Dutch and Saxon settlers took charters to dike and farm the North Sea marshes and islands. Their villages combined farming, grazing, and resources from the sea. Haven, its council, and the Red Sail rivals are fictional; the Renaissance music comes from a later age. ',
+                    'Around 985, Erik the Red led twenty-five ships from Iceland to settle Greenland; only fourteen are believed to have arrived. Norse settlers farmed barley and hay, kept sheep and cattle, fished and hunted seals, and traded wool and walrus ivory across the North Atlantic. Haven, its council, and the Red Sail rivals are fictional; the Renaissance music comes from a later age. ',
                     (0, jsxRuntime.jsx)('a', {
-                      href: 'https://whc.unesco.org/en/list/1314',
+                      href: 'https://whc.unesco.org/en/list/1536',
                       target: '_blank',
                       rel: 'noreferrer',
-                      children: 'Explore the Wadden Sea with UNESCO',
+                      children: 'Explore Norse Greenland (Kujataa) with UNESCO',
                     }),
                     '.',
                   ],

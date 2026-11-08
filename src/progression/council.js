@@ -7,14 +7,14 @@ var COUNCIL_DECISIONS = [
       title: 'The market charter',
       voice: 'Skipper Elin \xB7 traders\u2019 council',
       prompt:
-        'The neighboring crews will trade with us, but on whose terms? The guilds want a charter; the boat crews want open scales.',
+        'The neighboring crews will trade with us, but on whose terms? The craftsmen want a guild law; the boat crews want open scales.',
       options: {
         a: {
           title: 'Open scales',
           effect: 'Sale prices +10%, and buyers absorb 50% more before prices dip.',
         },
         b: {
-          title: 'A guild charter',
+          title: 'A guild law',
           effect: 'Workshops produce 15% more; each working workshop pays 1 gold a day in dues.',
         },
       },

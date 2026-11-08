@@ -1,6 +1,7 @@
 # Tideweald
 
 A hand-coloured northern sea chart you can build on: a phone-first settlement game.
+The story follows Norse settlers around 985, scattered from Erik the Red's fleet (see `docs/MILESTONE-1B.md`).
 
 This tree was **recovered from the published v16.11 build** on 8 November 2026, after the v15–v16.10 source was lost.
 It plays exactly like v16.11 apart from the Milestone 1 changes listed below, and it is now the source of truth.
