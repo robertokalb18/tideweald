@@ -1,0 +1,178 @@
+TIDEWEALD — RENAISSANCE CONSORT · 29 September 2026
+
+Twenty-five existing works, composed between c. 1470 and 1612. The compositions are in
+the public domain. Published editions supply all melodic AND harmonic note events.
+No AI compositions, newly composed chords, invented bass lines or sampled recordings.
+Instrumental realizations of vocal and organ scores retain the written polyphony.
+Tempo, instrument choice, balance and exact whole-score repeats are interpretive.
+
+Ten Philippe de Monte editions: Aaron Dalton, 2014, CC BY 4.0.
+https://creativecommons.org/licenses/by/4.0/
+Changes: instrumental timbres, tempo, velocity, whole-score repetition and synthesis.
+The remaining fifteen editions are explicitly marked Public Domain by Mutopia.
+Tallis's edition includes editorial ficta identified in the publisher's source.
+These are present in its published MIDI, not newly composed here.
+
+Fifteen pieces use the publisher's own LilyPond MIDI. For the ten pieces added on
+29 September 2026 the publisher MIDI could not be downloaded, so their MIDI
+(renaissance-sources/*.ly2midi.mid) was derived from the unmodified Mutopia LilyPond
+source (taken from github.com/MutopiaProject/MutopiaProject, commit recorded in
+renaissance-sources/manifest.json) with scripts/ly2midi.py. That interpreter
+reproduces all fifteen publisher MIDI files note-for-note. As in LilyPond's MIDI,
+voices sharing a staff are played by one instrument and unisons sound once.
+
+Tideweald's synthetic audio/MIDI realizations are released under CC BY 4.0.
+Credit: Historical composers; edition maintainers below; Tideweald instrumental
+realization (2026). No sampled performance or commercial soundfont is used.
+Original publisher MIDI, notation files, PDFs and metadata are supplied separately.
+The soundtrack license does not change the game's code or artwork licensing.
+
+Come again — John Dowland · 1597
+Public domain edition · Peter Chubb mutopia (at) chubb.wattle.id.au
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1691
+Source MIDI: renaissance-sources/1691-ComeAgain.mid
+Recorder · Harpsichord · Viol · Bass viol
+
+El grillo — Josquin des Prez · 1504
+Public domain edition · Peter Chubb mutopia (at) chubb.wattle.id.au
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=339
+Source MIDI: renaissance-sources/339-Grillo.mid
+Flute · Harp · Viol · Bass viol
+
+Belle qui tiens ma vie — Thoinot Arbeau · 1588–89
+Public domain edition · Peter Chubb mutopia (at) chubb.wattle.id.au
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1
+Source MIDI: renaissance-sources/1-belle.mid
+Soft drum · Recorder · Harp · Viol · Bass viol
+
+Saltarello — Vincenzo Galilei · 16th century
+Public domain edition · Federico Bruni
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=110
+Source MIDI: renaissance-sources/110-saltarello.mid
+Harpsichord
+
+Tmeiskin — Jean Japart · early 16th century
+Public domain edition · Allen Garvin allen.garvin (at) dal.tribalddb.com http://agarvin.nitfol.com/music
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1734
+Source MIDI: renaissance-sources/1734-27-tmeiskin.mid
+Recorder · Lute-like plucked strings · Viol · Bass viol
+
+Unquiet thoughts — John Dowland · 1597
+Public domain edition · Peter Chubb mutopia (at) chubb.wattle.id.au
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=21
+Source MIDI: renaissance-sources/21-UnquietThoughts.mid
+Flute · Harpsichord · Harp · Bass viol
+
+Il est de bonne heure né — Anonymous · c. 1470
+Public domain edition · Peter Chubb mutopia (at) chubb.wattle.id.au
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=198
+Source MIDI: renaissance-sources/198-bonne_heure-song.mid
+Recorder · Psaltery · Viol · Bass viol
+
+Pavan II — Luis Milán · 16th century
+Public domain edition · Jeff Covey jeff.covey (at) pobox.com
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=24
+Source MIDI: renaissance-sources/24-milan-pavan2.mid
+Harp
+
+Amor, che sol dei cor leggiadri ha cura — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1903
+Source MIDI: renaissance-sources/1903-01-3-01.mid
+Flute · Harpsichord · Viol
+
+O beata colei — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1904
+Source MIDI: renaissance-sources/1904-01-3-02.mid
+Recorder · Harp · Bass viol
+
+Mentr’ameranno i nudi pesci l’onde — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1909
+Source MIDI: renaissance-sources/1909-01-3-07.mid
+Flute · Lute-like plucked strings · Viol
+
+Vago monte, fiorite ombrose piagge — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1910
+Source MIDI: renaissance-sources/1910-01-3-08.mid
+Recorder · Harpsichord · Bass viol
+
+Volentier canterei de vostri honori — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1914
+Source MIDI: renaissance-sources/1914-01-3-12.mid
+Flute · Harp · Viol
+
+Nuż my dziś krześcijani — Anonymous · 1586
+Public domain edition · Till Rettig
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=856
+Source MIDI: renaissance-sources/856-Nuz_my_dzis_krzescijani.mid
+Recorder · Harp · Viol
+
+O nata lux — Thomas Tallis · 1575
+Public domain edition · David Wake
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=949
+Source MIDI: renaissance-sources/949-tallis.mid
+Flute · Recorder · Harp · Viol · Bass viol
+
+The Silver Swan — Orlando Gibbons · 1612
+Public domain edition · Peter Chubb mutopia (at) chubb.wattle.id.au
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=302
+Source MIDI: renaissance-sources/302-SilverSwan.ly2midi.mid (derived from renaissance-sources/302-SilverSwan.ly with scripts/ly2midi.py)
+Flute · Recorder · Viol · Lute-like plucked strings · Bass viol
+
+Es ist ein Ros’ entsprungen — Michael Praetorius · 1609
+Public domain edition · Thomas Scharkowski
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1175
+Source MIDI: renaissance-sources/1175-es_ist_ein_ros_entsprungen.ly2midi.mid (derived from renaissance-sources/1175-es_ist_ein_ros_entsprungen.ly with scripts/ly2midi.py)
+Recorder · Psaltery · Viol · Bass viol
+
+Suonata prima, fuga plagale — Adriano Banchieri · 1605
+Public domain edition · Giampaolo Orrigo orrigo.gp (at) rosenet.it
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=31
+Source MIDI: renaissance-sources/31-Reg1_Suon1.ly2midi.mid (derived from renaissance-sources/31-Reg1_Suon1.ly with scripts/ly2midi.py)
+Harpsichord · Bass viol
+
+Suonata seconda, fuga triplicata — Adriano Banchieri · 1605
+Public domain edition · Giampaolo Orrigo orrigo.gp (at) rosenet.it
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=32
+Source MIDI: renaissance-sources/32-Reg1_Suon2.ly2midi.mid (derived from renaissance-sources/32-Reg1_Suon2.ly with scripts/ly2midi.py)
+Psaltery · Viol
+
+Old Hundredth — Genevan Psalter, arr. John Dowland · 1551/1612
+Public domain edition · Peter Chubb mutopia (at) chubb.wattle.id.au
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=90
+Source MIDI: renaissance-sources/90-Old100.ly2midi.mid (derived from renaissance-sources/90-Old100.ly with scripts/ly2midi.py)
+Flute · Viol
+
+Chi non sà come altrui duo chiari lumi — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1906
+Source MIDI: renaissance-sources/1906-01-3-04.ly2midi.mid (derived from renaissance-sources/1906-01-3-04.ly with scripts/ly2midi.py)
+Recorder · Lute-like plucked strings · Bass viol
+
+Vostro fui, vostro son, e sarò vostro — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1907
+Source MIDI: renaissance-sources/1907-01-3-05.ly2midi.mid (derived from renaissance-sources/1907-01-3-05.ly with scripts/ly2midi.py)
+Flute · Psaltery · Viol
+
+O mia lieta ventura, hor quale stella — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1911
+Source MIDI: renaissance-sources/1911-01-3-09.ly2midi.mid (derived from renaissance-sources/1911-01-3-09.ly with scripts/ly2midi.py)
+Recorder · Harp · Viol
+
+S’io odo alcun felice, e lieto amante — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1916
+Source MIDI: renaissance-sources/1916-01-3-14.ly2midi.mid (derived from renaissance-sources/1916-01-3-14.ly with scripts/ly2midi.py)
+Flute · Lute-like plucked strings · Bass viol
+
+Così d’un olmo sospirando a l’ombra — Philippe de Monte · 1582
+CC BY 4.0 · Aaron Dalton http://perlkonig.com/about/masters-thesis
+https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1926
+Source MIDI: renaissance-sources/1926-01-3-24.ly2midi.mid (derived from renaissance-sources/1926-01-3-24.ly with scripts/ly2midi.py)
+Recorder · Psaltery · Bass viol

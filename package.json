@@ -1,0 +1,24 @@
+{
+  "name": "tideweald",
+  "version": "16.11.1",
+  "private": true,
+  "type": "module",
+  "description": "Tideweald: a hand-coloured northern sea chart you can build on.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.js",
+    "test:browser": "node tests/browser/smoke.mjs",
+    "format": "prettier --print-width 110 --single-quote --write \"src/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.mjs\""
+  },
+  "dependencies": {
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright": "^1.55.0",
+    "prettier": "^3.8.1"
+  },
+  "engines": { "node": ">=22" }
+}
