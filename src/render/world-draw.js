@@ -112,11 +112,69 @@ function buildingSprite(e) {
         index: e.kind === 'cottage' ? e.id % 6 : (CATALOG[e.kind]?.sprite ?? 0),
       };
 }
-function drawBuildingStatic(e, t, a, n, r, o) {
+// Milestone 3: a fenced yard of trodden earth around each longhouse that has room for one (no other building
+// within two tiles). Drawn with the building, so it is part of that building's static entry and fingerprint;
+// the season is folded into the entry's key because the fence wears snow in winter.
+function yardFlags(e) {
+  let t = new Map(),
+    a = new Set(),
+    n = (r, o) => `${Math.floor(r / 2)},${Math.floor(o / 2)}`;
+  for (let r of e.buildings) {
+    let o = n(r.x, r.y);
+    t.has(o) || t.set(o, []);
+    t.get(o).push(r);
+  }
+  for (let r of e.buildings) {
+    if (r.kind !== 'cottage' || !isBuilt(r)) continue;
+    let o = !0;
+    for (let l = -1; l <= 1 && o; l++)
+      for (let c = -1; c <= 1 && o; c++)
+        for (let u of t.get(n(r.x + l * 2, r.y + c * 2)) ?? [])
+          if (u !== r && Math.hypot(u.x - r.x, u.y - r.y) < 2.2) {
+            o = !1;
+            break;
+          }
+    o && a.add(r.id);
+  }
+  return a;
+}
+function drawYard(e, t, a, n, r) {
+  let o = n === PALETTES.carta,
+    l = 1.05 * (TILE_W / Math.SQRT2),
+    s = 1.05 * (TILE_H / Math.SQRT2),
+    c = a.x,
+    u = a.y + 3;
+  (e.save(),
+    (e.fillStyle = r === 3 ? 'rgba(240,238,228,.55)' : o ? 'rgba(196,170,112,.42)' : 'rgba(170,132,80,.4)'),
+    e.beginPath(),
+    e.ellipse(c, u, l * 0.92, s * 0.92, 0, 0, Math.PI * 2),
+    e.fill());
+  let d = [];
+  for (let m = 0; m < 18; m++) {
+    let h = (m / 18) * Math.PI * 2;
+    // Leave a gate at the front (towards the viewer).
+    Math.abs(h - Math.PI / 2) < 0.3 || d.push([c + Math.cos(h) * l, u + Math.sin(h) * s, h]);
+  }
+  ((e.strokeStyle = o ? '#5a4028' : '#6b4a2a'), (e.lineWidth = 1.1), (e.lineCap = 'round'), e.beginPath());
+  for (let m = 0; m < d.length - 1; m++) {
+    let [h, p, g] = d[m],
+      [v, M, w] = d[m + 1];
+    w - g > 0.5 ||
+      (e.moveTo(h, p - 2.2), e.lineTo(v, M - 2.2), e.moveTo(h, p - 4.6), e.lineTo(v, M - 4.6));
+  }
+  for (let [m, h] of d) (e.moveTo(m, h), e.lineTo(m, h - 6));
+  if ((e.stroke(), r === 3)) {
+    e.fillStyle = 'rgba(250,250,246,.95)';
+    for (let [m, h] of d) e.fillRect(m - 1, h - 7.2, 2, 1.6);
+  }
+  e.restore();
+}
+function drawBuildingStatic(e, t, a, n, r, o, yard = !1, season = 0) {
   let l = project(t.x, t.y);
   l.y -= cellAt(n, t.x, t.y)?.elevation ?? 0;
   let s = BUILDING_SIZES[t.kind]?.size ?? 132;
   if (isBuilt(t)) {
+    yard && drawYard(e, t, l, o, season);
     let c = buildingSprite(t);
     sprite(e, a[c.atlas], c.index, l.x, l.y + s * 0.15, s, 1, t.orientation ? -1 : 1, c.atlas, tier(s * r));
   } else {
@@ -322,6 +380,7 @@ function staticsFor(e, t) {
       q: 0,
     });
   }
+  let yards = yardFlags(e);
   for (let r of e.buildings) {
     let o = project(r.x, r.y);
     o.y -= cellAt(e, r.x, r.y)?.elevation ?? 0;
@@ -331,10 +390,13 @@ function staticsFor(e, t) {
         mix(mix(2166136261, r.id), r.kind.length * 131 + r.kind.charCodeAt(0)),
         s * 4 + (r.orientation ?? 0),
       );
+    let yard = yards.has(r.id);
     ((c = mix(mix(c, Math.round(o.x * 2)), Math.round(o.y * 2))),
+      yard && (c = mix(c, 7001 + t)),
       a.push({
         kind: 'building',
         value: r,
+        yard,
         depth: r.x + r.y,
         order: n++,
         x0: o.x - l * 0.56,
@@ -522,6 +584,53 @@ function shoreOf(e) {
     e.shore
   );
 }
+// Milestone 3: water depth. Each sea cell's distance to land (capped at 12) is worked out once per terrain
+// revision and painted into a one-pixel-per-cell image, drawn under the sea texture with smoothing, so the
+// shallows, open water and deep water blend. The depth is part of the terrain tile fingerprint.
+var DEPTH_CAP = 12;
+function depthOf(e) {
+  let t = shoreOf(e);
+  if (t.depth) return t.depth;
+  let a = e.world.cells,
+    n = new Uint8Array(GRID_W * GRID_H).fill(DEPTH_CAP),
+    r = new Int32Array(GRID_W * GRID_H),
+    o = 0,
+    l = 0;
+  for (let s = 0; s < a.length; s++) a[s].land && ((n[s] = 0), (r[l++] = s));
+  for (; o < l; ) {
+    let s = r[o++],
+      c = s % GRID_W,
+      u = (s - c) / GRID_W,
+      d = n[s] + 1;
+    if (d >= DEPTH_CAP) continue;
+    for (let [m, h] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      let p = c + m,
+        g = u + h;
+      if (p < 0 || g < 0 || p >= GRID_W || g >= GRID_H) continue;
+      let v = g * GRID_W + p;
+      n[v] > d && ((n[v] = d), (r[l++] = v));
+    }
+  }
+  return (t.depth = n);
+}
+function depthImage(e) {
+  let t = depthOf(e),
+    a = `${e.style}|${e.world.terrainRevision ?? 0}`;
+  if (e.depthImage?.key === a && e.depthImage.depth === t) return e.depthImage.canvas;
+  let n = e.depthImage?.canvas ?? document.createElement('canvas');
+  ((n.width = GRID_W), (n.height = GRID_H));
+  let r = n.getContext('2d'),
+    o = r.createImageData(GRID_W, GRID_H),
+    [l, s, c] = e.pal.seaDepths;
+  for (let u = 0; u < t.length; u++) {
+    let d = t[u],
+      m = d <= 3 ? Math.max(0, d - 1) / 2 : 0,
+      h = d > 3 ? Math.min(1, (d - 3) / 7) : 0,
+      p = d <= 3 ? l.map((g, v) => g + (s[v] - g) * Math.min(1, m)) : s.map((g, v) => g + (c[v] - g) * h);
+    ((o.data[u * 4] = p[0]), (o.data[u * 4 + 1] = p[1]), (o.data[u * 4 + 2] = p[2]), (o.data[u * 4 + 3] = 255));
+  }
+  return (r.putImageData(o, 0, 0), (e.depthImage = { key: a, depth: t, canvas: n }), n);
+}
 function refreshField(e, t) {
   let a = e.world,
     n = `${e.style}|${e.season}|${e.wet}`,
@@ -661,10 +770,13 @@ function forCells(e, t, a, n) {
 }
 function terrainFingerprint(e, t) {
   let a = e.world,
-    n = 2166136261;
+    n = 2166136261,
+    d = depthOf(e);
   forCells(a, t, 70, (r) => {
     n = mix(n, e.fieldKey[r.y * GRID_W + r.x]);
+    r.land || (n = mix(n, d[r.y * GRID_W + r.x]));
   });
+  n = mix(n, e.style === 'carta' ? 1 : 2);
   for (let r of a.bridges ?? []) {
     let o = project(r.x, r.y);
     Math.abs(o.x - t.x - t.w / 2) < t.w / 2 + TILE_W * 14 &&
@@ -694,6 +806,14 @@ function drawTerrainTile(e, t, a, n) {
   ((e.lineJoin = 'round'), (e.lineCap = 'round'));
   let h = 2 ** Math.max(0, Math.round(Math.log2(0.55 / n)));
   ((e.fillStyle = o.sea), e.fillRect(a.x, a.y, a.w, a.h));
+  {
+    let x = project(0, 0);
+    (e.save(),
+      e.transform(TILE_W / 2, TILE_H / 2, -TILE_W / 2, TILE_H / 2, x.x, x.y),
+      (e.imageSmoothingEnabled = !0),
+      e.drawImage(depthImage(t), 0, 0),
+      e.restore());
+  }
   {
     let x = l ? pattern(e, 'sea') : texturePattern(e, 'water');
     (x.setTransform(new DOMMatrix().scale(h)),

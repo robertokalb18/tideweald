@@ -45,7 +45,7 @@ function drawStatic(e, t, a, n) {
     : a.kind === 'plant'
       ? drawPlant(e, a.value, t.images, t.world, n, t.season, t.wet, a)
       : a.kind === 'building'
-        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal)
+        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal, a.yard, t.season)
         : a.kind === 'feature'
           ? drawFeature(e, a.value, t.images, n)
           : drawObject(e, a.value);

@@ -1,0 +1,105 @@
+/* Milestone 3, "One look": a compact layout for phones held sideways (and short windows), so that at least
+   three quarters of the map stays visible. Loaded after app.css; the same selectors win by order.
+   Uses the --safe-* variables (never env(safe-area-inset-*) directly). */
+@media (max-height: 520px) and (orientation: landscape) {
+  :root {
+    --tab-h: 46px;
+    --tab-gap: max(8px, calc(var(--safe-bottom) - 14px));
+    --hud-top: calc(var(--safe-top) + 6px);
+    --row-h: 40px;
+    --res-w: min(300px, 36%);
+    --time-w: 118px;
+    --land-tab-w: min(360px, calc(100% - var(--edge-l) - var(--edge-r) - 230px));
+  }
+  /* Top row: stores on the left, the chapter goal in the middle, time on the right. */
+  :root[data-art] body .sandbox .resource-bar {
+    top: var(--hud-top);
+    bottom: auto;
+    left: var(--edge-l);
+    right: auto;
+    width: var(--res-w);
+    height: var(--row-h);
+  }
+  :root[data-art] body .sandbox .resource > svg {
+    width: 22px;
+    height: 22px;
+    padding: 3px;
+  }
+  :root[data-art] body .sandbox .resource .resource-rate {
+    display: none;
+  }
+  :root[data-art] body .sandbox .mobile-mission {
+    top: var(--hud-top);
+    bottom: auto;
+    left: calc(var(--edge-l) + var(--res-w) + 8px);
+    right: calc(var(--edge-r) + var(--time-w) + 8px);
+    width: auto;
+    max-width: 320px;
+    height: var(--row-h);
+  }
+  :root[data-art] body .sandbox .hud-time {
+    top: var(--hud-top);
+    bottom: auto;
+    right: var(--edge-r);
+    width: var(--time-w);
+    height: var(--row-h);
+  }
+  :root[data-art] body .sandbox .hud-time small {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  :root[data-art] body .hud-play {
+    width: 30px;
+    height: 30px;
+  }
+  /* Threats and notices: one slim line under the top row, not a full-width banner. */
+  :root[data-art] body .sandbox .threat-strip {
+    top: calc(var(--hud-top) + var(--row-h) + 6px) !important;
+    left: var(--edge-l) !important;
+    right: auto !important;
+    width: max-content;
+    max-width: min(420px, 60%);
+    min-height: 0;
+    padding: 5px 12px;
+    border-radius: 12px;
+  }
+  :root[data-art] body .sandbox .threat-strip small {
+    display: none;
+  }
+  :root[data-art] body .sandbox :is(.notice-slot, .mobile-feedback) {
+    position: absolute !important;
+    inset: calc(var(--hud-top) + var(--row-h) + 6px) var(--edge-r) auto calc(var(--edge-l) + 230px) !important;
+    width: auto !important;
+    justify-content: flex-end !important;
+  }
+  :root[data-art] body .sandbox .island-notice {
+    max-width: 380px;
+    padding: 5px 12px;
+    font-size: calc(12.5px * var(--fs, 1));
+  }
+  /* Bottom: a shorter tab bar on the left, camera tools on the right. */
+  :root[data-art] body .tab-bar {
+    left: var(--edge-l);
+    right: auto;
+    width: var(--land-tab-w);
+    margin: 0;
+  }
+  :root[data-art] body .tab-bar :is(span, small) {
+    font-size: 10.5px;
+  }
+  :root[data-art] body .build-orb {
+    width: 44px;
+    height: 44px;
+    margin-top: -6px;
+  }
+  :root[data-art] body .sandbox .harvest-fab {
+    width: 46px;
+    height: 46px;
+    left: auto;
+    right: calc(var(--edge-r) + 4px);
+    bottom: calc(var(--tab-gap) + var(--tab-h) + 10px);
+  }
+  :root[data-art] body .sandbox .world-map[data-open='true'] {
+    bottom: calc(var(--tab-gap) + var(--tab-h) + 8px);
+  }
+}

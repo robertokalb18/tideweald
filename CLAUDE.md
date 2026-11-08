@@ -16,4 +16,6 @@ New rules from Milestone 1:
 - Milestone 2, "Raids you can fight", is in v16.13 (`docs/MILESTONE-2.md`); its playtest gate is still open.
 - Raids are fought in `military/battle.js`. Keep it deterministic (no Math.random, no wall-clock), inside `step()`,
   and keep its only import the `world/grid.js` leaf. The Army forecast must keep using the same code as the fight.
-- Next milestone: 3, "One look" (art bible, Norse longhouses, compact landscape UI). See the audit doc.
+- Milestone 3, "One look", is in v16.14 (`docs/MILESTONE-3.md`). New art follows `docs/ART-BIBLE.md`.
+  `tests/browser/layout.mjs` must keep at least 75% of the map visible on a phone held sideways.
+- Next milestone: 4, production chains and needs tiers. See the audit doc.

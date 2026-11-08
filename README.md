@@ -16,6 +16,7 @@ npm run serve        # http://localhost:8080
 npm run test:browser # with the server running: browser smoke test
 node tests/browser/raid.mjs   # with the server running: stages a raid and screenshots it
 node tools/balance-raids.mjs  # raid balance tables (about a minute)
+node tests/browser/layout.mjs # with the server running: how much of the map the interface leaves visible
 ```
 
 Open `http://localhost:8080/?diagnostics` to see the performance overlay. It shows frame rate, frame times, simulation cost, sprite cache, heap, entity counts and the last save's main-thread time.
@@ -58,3 +59,9 @@ Open `http://localhost:8080/?diagnostics` to see the performance overlay. It sho
 Raids now land on a beach or river bank, march along a route shown on the map, and are fought there by guards in
 the chosen formation, with towers and palisade gates that count only where they stand. The Army panel forecasts
 the result with the same rules. Details, balance tables and review notes: `docs/MILESTONE-2.md`.
+
+## Milestone 3 changes (v16.14): one look
+
+An art bible (`docs/ART-BIBLE.md`), Norse longhouses throughout, fenced yards, three water depths, hearth smoke
+in the cold seasons, and a compact layout for phones held sideways (78% of the map visible, up from 72%).
+Details: `docs/MILESTONE-3.md`.

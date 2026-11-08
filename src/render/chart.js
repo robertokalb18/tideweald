@@ -4,6 +4,8 @@ var PALETTES = {
   carta: {
     sea: '#9dbdb0',
     seaDeep: '#86aca3',
+    // Milestone 3: three water depths, from the shore out (shallows, open water, deep water).
+    seaDepths: [[196, 216, 196], [157, 189, 176], [116, 152, 146]],
     seaInk: 'rgba(46,70,74,.42)',
     coastInk: '#3b3128',
     paper: '#efe4c8',
@@ -32,6 +34,7 @@ var PALETTES = {
   classic: {
     sea: '#237f8c',
     seaDeep: '#1d7280',
+    seaDepths: [[52, 160, 160], [35, 127, 140], [22, 92, 110]],
     seaInk: 'rgba(210,241,216,.14)',
     coastInk: '#a28252',
     paper: '#f5e5aa',

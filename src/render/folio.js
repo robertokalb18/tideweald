@@ -50,9 +50,12 @@ function tw11Seed(e) {
   for (const ch of String(e.islandId ?? 'tw')) s = Math.imul(s ^ ch.charCodeAt(0), 16777619);
   return s >>> 0;
 }
+// Milestone 3: every longhouse is drawn in a northern form (v16.11 drew 4 in 10). Folio sprites 33–36 are the
+// turf-roof log house, the longhouse, the stabbur and the fisher's house; the stabbur is a storehouse on posts,
+// and the fisher's house reads as a later cottage, so dwellings use the longhouse (55%) and the turf-roof log house (45%).
 function tw11North(id) {
-  const h = Math.imul(id | 0, 2654435761) >>> 0;
-  return h % 10 >= 6 ? (h >>> 8) % 4 : -1;
+  const h = (Math.imul(id | 0, 2654435761) >>> 8) % 20;
+  return h < 11 ? 1 : 0;
 }
 function tw11Classify(e) {
   const rev = e.terrainRevision ?? 0;
@@ -441,14 +444,39 @@ function tw11Ambient(e, season, now, still) {
     } else dir = m.id % 2 ? 1 : -1;
     out.push({ x, y, s: m.s, lift, spr, dir, bob, kind: m.kind });
   }
+  // Milestone 3, seasons beyond palette: in autumn and winter, longhouse hearths smoke (about every other house).
+  if (season >= 2) {
+    let n = 0;
+    for (const b of e.buildings) {
+      if (b.kind !== 'cottage' || b.buildProgress < 1 - 1e-8 || (Math.imul(b.id, 2654435761) >>> 29) % 2) continue;
+      if (++n > 160) break;
+      out.push({ x: b.x, y: b.y, s: 26, lift: 30, spr: 0, dir: 1, bob: 0, kind: 'smoke', ph: (b.id % 97) / 97, t, winter: season === 3 });
+    }
+  }
   return out;
 }
 function tw11DrawAmbient(e, t, a) {
   const m = a.ambient,
     img = t.images.folio;
-  if (!ready(img)) return;
   const d = project(a.x, a.y);
   d.y -= cellAt(t.world, a.x, a.y)?.elevation ?? 0;
+  if (m.kind === 'smoke') {
+    // Three puffs rising from the roof ridge and drifting downwind, fading as they go.
+    const carta = t.style === 'carta';
+    e.save();
+    for (let k = 0; k < 3; k++) {
+      const c = (m.t * 1.6e-4 + m.ph + k / 3) % 1,
+        r = 3 + c * 7;
+      e.globalAlpha = (1 - c) * (m.winter ? 0.5 : 0.38);
+      e.fillStyle = carta ? '#8a8378' : '#d9dde0';
+      e.beginPath();
+      e.arc(d.x + 4 + c * 14 + Math.sin(c * 6 + m.ph * 9) * 2, d.y - 34 - c * 34, r, 0, Math.PI * 2);
+      e.fill();
+    }
+    e.restore();
+    return;
+  }
+  if (!ready(img)) return;
   const carta = t.style === 'carta',
     fly = m.kind === 'gull' || m.kind === 'eagle';
   if (fly) {
