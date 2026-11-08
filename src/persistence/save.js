@@ -28,6 +28,66 @@ var gt = z.number().finite().min(0).max(1e12),
         CATALOG_ITEMS.some((a) => a.id === t && (e === 'buildings' ? isBuildingItem(a) : a.category === e)),
       ),
   I7 = z.enum(['raid', 'flood', 'wildfire', 'gale', 'blizzard']),
+  // Milestone 2: a raid's landing, target and route (decided when it is sighted), and the battle itself.
+  cellPair = z.tuple([xe.max(GRID_W), xe.max(GRID_H)]),
+  RAID_PLAN = {
+    target: xe.optional(),
+    tx: $7.optional(),
+    ty: V7.optional(),
+    landing: cellPair.optional(),
+    water: cellPair.optional(),
+    route: z.array(xe.max(GRID_W)).max(600).optional(),
+  },
+  hp = z.number().finite().min(0).max(1e6),
+  pos = z.number().finite().min(-8).max(GRID_W + 8),
+  BATTLE = z.object({
+    id: xe,
+    strength: xe.min(1).max(1e4),
+    t: gt.max(10),
+    target: xe,
+    tx: $7,
+    ty: V7,
+    landing: cellPair,
+    water: cellPair,
+    route: z.array(xe.max(GRID_W)).max(600),
+    raiders: z
+      .array(
+        z.object({
+          x: pos,
+          y: pos,
+          px: pos,
+          py: pos,
+          hp,
+          max: hp,
+          s: z.enum(['wait', 'march', 'fight', 'loot', 'flee', 'down', 'away']),
+          ri: xe.max(600),
+          c: Qi,
+          wait: gt.max(1),
+        }),
+      )
+      .max(14),
+    guards: z
+      .array(
+        z.object({
+          x: pos,
+          y: pos,
+          px: pos,
+          py: pos,
+          hp,
+          max: hp,
+          s: z.enum(['muster', 'fight', 'down']),
+          ch: z.number().finite().min(-1).max(1e12),
+        }),
+      )
+      .max(18),
+    gate: hp,
+    gateMax: hp,
+    lootTime: gt.max(10),
+    burned: xe,
+    routed: z.boolean(),
+    arrows: xe,
+    plunder: Ji,
+  }),
   _C = z
     .object({
       formation: z.enum(['patrol', 'line', 'column']).optional(),
@@ -48,10 +108,27 @@ var gt = z.number().finite().min(0).max(1e12),
       losses: Ji.default({ gold: 0, food: 0, timber: 0, stone: 0 }),
       upkeep: Ji.default({ gold: 0, food: 0, timber: 0, stone: 0 }),
       pending: z
-        .object({ id: xe, kind: I7, dueDay: xe, strength: xe.min(1).max(1e4), title: z.string().max(200) })
+        .object({
+          id: xe,
+          kind: I7,
+          dueDay: xe,
+          strength: xe.min(1).max(1e4),
+          title: z.string().max(200),
+          ...RAID_PLAN,
+        })
         .optional(),
+      battle: BATTLE.optional(),
       lastReport: z
-        .object({ day: xe, kind: I7, title: z.string().max(200), text: z.string().max(1e3), losses: Ji })
+        .object({
+          day: xe,
+          kind: I7,
+          title: z.string().max(200),
+          text: z.string().max(1e3),
+          losses: Ji,
+          battle: z
+            .object({ fell: xe, fled: xe, raiders: xe, guardsDown: xe, guardsLost: xe })
+            .optional(),
+        })
         .optional(),
       lastShortageDay: xe.optional(),
       scripted: z

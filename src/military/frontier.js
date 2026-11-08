@@ -2,6 +2,7 @@
 import { WORKSHOPS } from '../economy/workshops.js';
 import { councilEffects } from '../progression/council.js';
 import { seasonAt } from '../world/seasons.js';
+import { battleOutcome, forecastBattle, planRaid, startBattle, stepBattle } from './battle.js';
 
 var DEFENSE_ITEMS = [
     {
@@ -16,7 +17,7 @@ var DEFENSE_ITEMS = [
       materials: { timber: 25, stone: 15 },
       unlock: 4,
       description:
-        'Adds 6 defense. A completed tower gives four days of warning before the next threat, instead of three.',
+        'Archers shoot raiders within 7 tiles. The watch spots raiders\u2019 sails as soon as a raid is sighted, and you get four days of warning instead of three. Counts 6 toward defense.',
     },
     {
       id: 'palisade',
@@ -30,7 +31,7 @@ var DEFENSE_ITEMS = [
       materials: { timber: 35, stone: 5 },
       unlock: 4,
       description:
-        'Adds 4 settlement defense. A shared defensive perimeter protects the whole island; road connections are not required.',
+        'Raiders within 5 tiles move at half speed, and they must break the gate before they can loot stores behind it or set them alight. Guards fighting near it take less harm. Counts 4 toward defense.',
     },
     {
       id: 'guardhall',
@@ -44,7 +45,7 @@ var DEFENSE_ITEMS = [
       materials: { food: 20, timber: 40, stone: 25 },
       unlock: 4,
       description:
-        'Provides room for six guards. Train pairs in Army. Each guard adds 3 defense and needs food and gold daily.',
+        'Room for six guards. Train pairs in Army. When raiders land, guards leave the hall and fight by their formation. Each needs food and gold daily.',
     },
   ],
   empty = () => ({ gold: 0, food: 0, timber: 0, stone: 0 }),
@@ -103,7 +104,7 @@ function log(e, t, a) {
     e.noticeId++);
 }
 var THREAT_ADVICE = {
-    raid: 'Build watchtowers and palisades; train guards in a completed guard hall. Matching the enemy strength prevents the raid losses; below 70% they burn a building.',
+    raid: 'They land on the shore and march on the stores. Towers shoot raiders within 7 tiles, a palisade gate shields stores within 5 tiles, and guards fight by formation. If half the band reaches unguarded stores, they set them alight.',
     flood: 'Granaries keep stores dry: each prevents 30% of flood losses, up to 80%.',
     wildfire:
       'At least 25 clean freshwater tiles reduce losses by 65%. Keep rivers and ponds across the island.',
@@ -131,11 +132,102 @@ function raidStrength(e, t) {
     c = o + (s - o) * Math.min(1, Math.max(0, (a - r) / (l - r)));
   return Math.round((Math.max(10 + Math.min(t, 4) * 2, c * 0.9) + (t % 3)) * councilEffects(e).raidStrength);
 }
-var FORMATION_FACTOR = { line: 1.15, patrol: 1.05, column: 1 },
-  effectiveDefense = (e) => defenseStrength(e) * FORMATION_FACTOR[e.frontier.formation ?? 'patrol'];
+// Raids are fought on the map (battle.js). Everything below is how the frontier rules start a
+// battle, forecast it for the Army panel, and settle it.
+var battleOpts = (e) => ({ structure: councilEffects(e).structureDefense, morale: e.frontier.morale }),
+  peekPlans = new WeakMap();
+/** The raid's landing, target and route: saved on the threat, or worked out (and not saved) for a peek. */
+function raidPlan(e, t, save = !1) {
+  if (t.route) return t;
+  let a = peekPlans.get(e);
+  if (a?.id !== t.id) peekPlans.set(e, (a = { id: t.id, plan: planRaid(e, t.id) }));
+  return save && Object.assign(t, a.plan), a.plan;
+}
+var forecasts = new WeakMap();
+/** Plays the coming (or current) raid to its end on a copy, with the island as it is now. */
+function raidForecast(e, t) {
+  let a = e.frontier,
+    n = [
+      t.id,
+      a.formation ?? 'patrol',
+      a.garrison,
+      e.placements,
+      e.buildings.reduce((o, l) => o + (l.buildProgress >= 1 - 1e-8 ? 1 : 0), 0),
+      Math.round(a.morale / 5),
+      councilEffects(e).structureDefense,
+      a.battle ? Math.floor(a.battle.t * 10) : -1,
+    ].join('|'),
+    r = forecasts.get(e);
+  if (r?.key === n) return r.value;
+  let o = a.battle ?? startBattle(e, t, raidPlan(e, t), battleOpts(e)),
+    l = forecastBattle(e, o, battleOpts(e));
+  return (forecasts.set(e, { key: n, value: l }), l);
+}
+function guardsLost(e) {
+  return e.repelled ? Math.floor(e.guardsDown / 2) : Math.ceil(e.guardsDown / 2);
+}
+function landRaid(e, t, a) {
+  let n = e.frontier,
+    r = raidPlan(e, t, !0);
+  ((n.battle = startBattle(e, t, r, battleOpts(e))),
+    (n.battle.plunder = lossCaps(e, t, councilEffects(e).threatLoss)),
+    log(
+      e,
+      `${t.title} land`,
+      n.garrison
+        ? `${n.battle.raiders.length} raiders are coming ashore. ${n.garrison} guards leave their halls (${{ patrol: 'patrol', line: 'shield line', column: 'marching column' }[n.formation ?? 'patrol']}). You can change formation while they fight.`
+        : `${n.battle.raiders.length} raiders are coming ashore, and no guards stand in their way.`,
+    ));
+}
+function resolveRaid(e, t, a) {
+  let n = e.frontier,
+    r = battleOutcome(a),
+    o = {};
+  for (let d of Object.keys(a.plunder))
+    ((o[d] = Math.min(e.wallet[d], Math.ceil(a.plunder[d] * r.lost))), (e.wallet[d] -= o[d]), (n.losses[d] += o[d]));
+  let l = Math.min(n.garrison, guardsLost(r));
+  ((n.garrison -= l), r.repelled && n.raidsRepelled++);
+  let s = Object.values(o).reduce((d, m) => d + m, 0);
+  ((n.morale = Math.max(50, n.morale - (s || l ? 6 : 0))), n.resolved++);
+  let c = e.buildings.find((d) => d.id === r.burned),
+    u = [
+      `${r.fell} of ${r.raiders} raiders fell${r.fled ? `; ${r.fled} rowed away` : ''}.`,
+      r.arrows ? `The towers loosed ${r.arrows} volleys.` : '',
+      r.gateHeld ? 'The palisade gate held.' : '',
+      r.guardsDown
+        ? l
+          ? `${l} guard${l === 1 ? '' : 's'} fell${r.guardsDown > l ? `; ${r.guardsDown - l} wounded will recover` : ''}.`
+          : `${r.guardsDown} guard${r.guardsDown === 1 ? ' was' : 's were'} wounded and will recover.`
+        : r.guards
+          ? 'Every guard came home.'
+          : '',
+      s
+        ? `They carried off ${Object.entries(o)
+            .filter(([, d]) => d > 0)
+            .map(([d, m]) => `${m} ${d}`)
+            .join(', ')}.`
+        : 'No stores were taken.',
+      c ? `They set fire to the ${c.kind.replace(/_/g, ' ')}; builders are repairing it.` : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    d = r.repelled ? 'The harbor holds' : 'Raiders take supplies';
+  ((n.lastReport = {
+    day: Math.floor(e.time + 1e-8) + 1,
+    kind: 'raid',
+    title: d,
+    text: u,
+    losses: o,
+    battle: { fell: r.fell, fled: r.fled, raiders: r.raiders, guardsDown: r.guardsDown, guardsLost: l },
+  }),
+    log(e, d, u),
+    (n.pending = void 0),
+    (n.battle = void 0),
+    (n.nextEventDay = Math.floor(e.time + 1e-8) + 1 + 8 + (n.resolved % 3)));
+}
 function threatProtection(e, t) {
   return t.kind === 'raid'
-    ? Math.min(1, effectiveDefense(e) / t.strength)
+    ? 1 - raidForecast(e, t).lost
     : t.kind === 'flood'
       ? Math.min(0.8, completed(e, 'granary') * 0.3)
       : t.kind === 'gale'
@@ -151,8 +243,10 @@ function threatProtection(e, t) {
             );
 }
 function projectedLoss(e, t) {
-  let a = (1 - threatProtection(e, t)) * councilEffects(e).threatLoss,
-    n = t.kind === 'raid';
+  return lossCaps(e, t, (1 - threatProtection(e, t)) * councilEffects(e).threatLoss);
+}
+function lossCaps(e, t, a) {
+  let n = t.kind === 'raid';
   return {
     gold: Math.ceil(Math.min(e.wallet.gold * (n ? 0.16 : 0.07), n ? 80 + t.strength * 3 : 50) * a),
     food: Math.ceil(Math.min(e.wallet.food * (n ? 0.2 : 0.26), 100 + t.strength) * a),
@@ -210,6 +304,7 @@ function trainGuards(e) {
 }
 function dismissGuards(e) {
   let t = e.frontier;
+  if (t.battle) return (log(e, 'Not now', 'Raiders are ashore. Guards stand down after the fight.'), !1);
   return t.garrison
     ? ((t.garrison = Math.max(0, t.garrison - 2)),
       e.revision++,
@@ -245,21 +340,9 @@ function resolveThreat(e, t) {
     n = projectedLoss(e, t);
   for (let u of Object.keys(n))
     ((n[u] = Math.min(e.wallet[u], n[u])), (e.wallet[u] -= n[u]), (a.losses[u] += n[u]));
-  let r = t.kind === 'raid' && effectiveDefense(e) >= t.strength;
-  (r && a.raidsRepelled++,
-    t.kind === 'raid' && !r && effectiveDefense(e) < t.strength * 0.5 && a.garrison > 0 && a.garrison--);
-  let o = '';
-  if (t.kind === 'raid' && !r && effectiveDefense(e) < t.strength * 0.7) {
-    let u =
-      e.buildings
-        .filter(
-          (d) =>
-            d.buildProgress >= 0.99999999 &&
-            !['watchtower', 'palisade', 'guardhall', 'beacon'].includes(d.kind),
-        )
-        .sort((d, m) => d.id - m.id)[t.id % 7] ?? null;
-    u && ((u.buildProgress = 0.8), (u.stored = 0), (o = u.kind), e.placements++);
-  }
+  // Raids are fought on the map and settled by resolveRaid; this handles the weather threats.
+  let r = !1,
+    o = '';
   if (t.kind === 'wildfire' && threatProtection(e, t) < 0.5) {
     let u = e.plants.find((d) => d.health > 0.5 && d.growth > 0.7);
     if (u) {
@@ -286,7 +369,7 @@ function resolveThreat(e, t) {
     (a.pending = void 0),
     (a.nextEventDay = Math.floor(e.time + 1e-8) + 1 + 8 + (a.resolved % 3)));
 }
-function stepFrontier(e) {
+function stepFrontier(e, dt = 0.025) {
   let t = e.frontier,
     a = Math.floor(e.time + 1e-8) + 1;
   if (t.training && e.time + 1e-8 >= t.trainingReady) {
@@ -357,7 +440,12 @@ function stepFrontier(e) {
         seasonAt(e.time).day === 1 &&
         (t.winters++, log(e, 'Spring returns', 'Another winter behind us. The covenant has held.')));
   }
-  t.pending && a >= t.pending.dueDay && resolveThreat(e, t.pending);
+  if (t.pending?.kind === 'raid') {
+    // A raid sighted before v16.13 has no landing yet: decide it now, inside the step.
+    (t.pending.route || raidPlan(e, t.pending, !0),
+      !t.battle && a >= t.pending.dueDay && landRaid(e, t.pending, a),
+      t.battle && stepBattle(e, t.battle, dt, battleOpts(e)) && resolveRaid(e, t.pending, t.battle));
+  } else t.pending && a >= t.pending.dueDay && resolveThreat(e, t.pending);
   let n = completed(e, 'watchtower') || completed(e, 'beacon') ? 4 : 3;
   if (!t.pending && a >= t.nextEventDay - n) {
     let r = t.eventNumber++,
@@ -380,12 +468,15 @@ function stepFrontier(e) {
       strength: Math.round(raidStrength(e, r) * (l?.factor ?? 1)),
       title: c,
     }),
+      s === 'raid' && raidPlan(e, t.pending, !0),
       (t.scripted = void 0),
       log(e, `${c} approaching`, `Due Day ${t.pending.dueDay}. ${THREAT_ADVICE[s]}`));
   }
 }
 
 export {
+  raidForecast,
+  raidPlan,
   DEFENSE_ITEMS,
   THREAT_ADVICE,
   createFrontier,

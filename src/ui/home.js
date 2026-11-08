@@ -346,11 +346,16 @@ function Home() {
         let ee = t.current,
           rt = ee.buildings.reduce((U9, P9) => U9 + (isBuilt(P9) ? 1 : 0), 0),
           ot = ee.frontier.pending?.id ?? -1,
+          bt = ee.frontier.battle?.id ?? -1,
           Kt = ah.current,
           ol = ee.frontier.lastReport?.day ?? -1;
         (Kt.ready &&
           (rt > Kt.built && (Nt.built(), diaryLog('built', ee, String(rt))),
           ot !== -1 && ot !== Kt.threat && (Nt.horn(), diaryLog('threat', ee, ee.frontier.pending?.title)),
+          // Raiders ashore: sound the horn and drop to normal speed so the fight can be watched.
+          bt !== -1 &&
+            bt !== Kt.battle &&
+            (Nt.horn(), diaryLog('battle', ee, ee.frontier.pending?.title), js.current.speed > 1 && A(1)),
           ol !== Kt.report && ol !== -1 && diaryLog('event', ee, ee.frontier.lastReport?.title),
           ee.story.mode === 'campaign' &&
             ee.story.chapter > Kt.chapter &&
@@ -362,6 +367,7 @@ function Home() {
             ready: !0,
             built: rt,
             threat: ot,
+            battle: bt,
             chapter: ee.story.chapter,
             notice: ee.noticeId,
             report: ol,
@@ -510,6 +516,7 @@ function Home() {
         council: !!ae && !ae.done && se.every((ke) => ke.done),
         built: S.buildings.filter(isBuilt).length,
         threat: S.frontier.pending?.id ?? -1,
+        battle: S.frontier.battle?.id ?? -1,
         report: S.frontier.lastReport?.day ?? -1,
         chapter: S.story.chapter,
         goals:
@@ -548,6 +555,8 @@ function Home() {
         return un(`Construction finished after ${ke}. Time paused so you can plan the next step.`);
       if (ae.threat !== B.threat && ae.threat !== -1)
         return un(`${S.frontier.pending?.title ?? 'A threat'} sighted. Time paused: open Army to prepare.`);
+      if (ae.battle !== B.battle && ae.battle !== -1)
+        return un('Raiders are coming ashore. Time paused: press play to watch the fight, or open Army to change formation.');
       if (ae.report !== B.report)
         return un(
           S.frontier.lastReport?.title
@@ -1089,7 +1098,9 @@ function Home() {
               children: [
                 xa.title,
                 (0, jsxRuntime.jsxs)('small', {
-                  children: ['Day ', xa.dueDay, ' \xB7 Tap for defenses and expected losses'],
+                  children: t.current.frontier.battle
+                    ? ['Ashore now \xB7 Tap to change formation or watch the fight']
+                    : ['Day ', xa.dueDay, ' \xB7 Tap for defenses and expected losses'],
                 }),
               ],
             }),
@@ -2711,7 +2722,7 @@ function Home() {
         },
         onThreatLocate: () => {
           let S = raidLocation(t.current);
-          S && (ga(), l(!1), O(!1), a.current?.home(), a.current?.focus(S.landing));
+          S && (ga(), l(!1), O(!1), a.current?.home(), a.current?.focus(S.spotted ? S.focus : S.target));
         },
         onLocate: () => {
           let S = locateArmy(t.current);

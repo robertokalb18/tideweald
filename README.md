@@ -10,10 +10,12 @@ It plays exactly like v16.11 apart from the Milestone 1 changes listed below, an
 
 ```sh
 npm install
-npm test             # 11 Node tests: saves, campaign data, simulation, decor
+npm test             # 22 Node tests: saves, campaign data, simulation, decor, raids
 npm run build        # writes dist/
 npm run serve        # http://localhost:8080
 npm run test:browser # with the server running: browser smoke test
+node tests/browser/raid.mjs   # with the server running: stages a raid and screenshots it
+node tools/balance-raids.mjs  # raid balance tables (about a minute)
 ```
 
 Open `http://localhost:8080/?diagnostics` to see the performance overlay. It shows frame rate, frame times, simulation cost, sprite cache, heap, entity counts and the last save's main-thread time.
@@ -26,7 +28,7 @@ Open `http://localhost:8080/?diagnostics` to see the performance overlay. It sho
 | `src/world` | Map grid, catalog of everything buildable, world creation, seasons, ecosystem, wildlife, villagers and soldiers |
 | `src/economy` | Workshops and production |
 | `src/settlement` | Bridges and the placement tools |
-| `src/military` | Threats, raids, guards and formations (`frontier.js`) |
+| `src/military` | Threats, guards and upkeep (`frontier.js`); raids fought on the map (`battle.js`) |
 | `src/progression` | 48 chapters, council decisions, campaign flow, orders and the folio collection |
 | `src/render` | Canvas renderer: terrain tiles, sprite atlases, chart ornaments, roads, the v16.11 folio sprites |
 | `src/ui` | React UI: the `Home` screen, panels, island canvas, dialogs, settings |
@@ -50,3 +52,9 @@ Open `http://localhost:8080/?diagnostics` to see the performance overlay. It sho
 1. **Fixed-step simulation** (`src/core/simulation.js`): the world always advances in whole 0.025-day steps, so 1x, 3x, 10x and skip-ahead give identical results (`tests/simulation.test.js`). At 1x the world now updates every 2.25 s of real time instead of every 0.25 s; movement and animation are unaffected.
 2. **Saving no longer stalls the game:** the island is serialised in 6 ms slices (`serializeWorldAsync`) and compressed in a Web Worker. In the headless measurement the longest frame during a save fell from 150 ms to 17 ms.
 3. **Diagnostics overlay** (`?diagnostics`).
+
+## Milestone 2 changes (v16.13): raids you can fight
+
+Raids now land on a beach or river bank, march along a route shown on the map, and are fought there by guards in
+the chosen formation, with towers and palisade gates that count only where they stand. The Army panel forecasts
+the result with the same rules. Details, balance tables and review notes: `docs/MILESTONE-2.md`.

@@ -388,7 +388,7 @@ function step(e, t) {
       `${b.length === 1 ? `A ${A[0]}` : `${b.length} animals (${A.slice(0, 3).join(', ')})`} could not survive near Day ${Math.floor(e.time) + 1}. Check its habitat for food, water and tainted ground.`,
     );
   }
-  ((e.animals = R), stepFrontier(e), Bp.delete(e));
+  ((e.animals = R), stepFrontier(e, t), Bp.delete(e));
 }
 function isWater(e) {
   return !!e && (!e.land || e.pond);

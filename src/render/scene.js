@@ -34,6 +34,7 @@ import {
 import { isBridge } from '../settlement/bridge-catalog.js';
 import { bridgeAt, bridgePlan, bridgeTiles } from '../settlement/bridges.js';
 import { animalPose, militaryActors, raidLocation } from '../world/actors.js';
+import { stepProgress } from '../core/step-clock.js';
 import { BUILDING_SIZES, CATALOG, GRID_H, Ia, clamp, isBuildingItem, isBuilt } from '../world/catalog.js';
 import { seasonAt } from '../world/seasons.js';
 import { cellAt } from '../world/world.js';
@@ -403,8 +404,60 @@ function drawWalker(e, t, a, n) {
         e.restore())
       : sprite(e, a.characters, t.id % 2 ? 4 : 5, r.x, r.y - Math.abs(u), 24, 1, l, 'characters'));
 }
+// Milestone 2: the raiders' route from the beach to the stores, a ring on their target, and the
+// towers' arrows in flight. Drawn each frame over the terrain, so not part of any tile cache.
+function drawRaidRoute(e, t, a, n, r, o, q = 1) {
+  let l = a.route;
+  if (!l?.length) return;
+  let f = 1 / Math.max(0.35, Math.min(1.5, q)); // keep strokes readable when zoomed out
+  (e.save(),
+    e.setLineDash([4 * f, 6 * f]),
+    (e.lineDashOffset = r ? 0 : -n * 0.006 * f),
+    (e.lineWidth = (o ? 3 : 2.2) * f),
+    (e.strokeStyle = 'rgba(176,58,40,.8)'),
+    e.beginPath());
+  for (let c = 0; c < l.length; c += 2) {
+    let u = project(l[c] + 0.5, l[c + 1] + 0.5);
+    c ? e.lineTo(u.x, u.y) : e.moveTo(u.x, u.y);
+  }
+  (e.stroke(), e.setLineDash([]));
+  let s = project(a.target.x, a.target.y);
+  ((e.lineWidth = 2.2 * f),
+    e.beginPath(),
+    e.ellipse(s.x, s.y, 76, 38, 0, 0, Math.PI * 2),
+    e.stroke(),
+    (e.fillStyle = 'rgba(176,58,40,.92)'),
+    (e.font = `600 ${Math.round(10 * f)}px system-ui, sans-serif`),
+    (e.textAlign = 'center'),
+    e.fillText(a.battle ? 'RAIDERS ASHORE' : 'RAID TARGET', s.x, s.y + 38 + 12 * f));
+  let c = a.battle?.shots;
+  if (c?.length && !r) {
+    let u = stepProgress(t);
+    ((e.strokeStyle = 'rgba(40,30,24,.85)'), (e.lineWidth = 1.2));
+    for (let [d, m, h, p] of c) {
+      let g = project(d, m),
+        v = project(h, p),
+        M = Math.min(1, u * 1.6),
+        w = g.x + (v.x - g.x) * M,
+        y = g.y - 34 + (v.y - 10 - (g.y - 34)) * M - Math.sin(M * Math.PI) * 18,
+        k = Math.atan2(v.y - 10 - (g.y - 34), v.x - g.x);
+      M < 1 && (e.beginPath(), e.moveTo(w - Math.cos(k) * 6, y - Math.sin(k) * 6), e.lineTo(w, y), e.stroke());
+    }
+  }
+  e.restore();
+}
 function drawMilitary(e, t, a, n, r, o) {
   let l = project(t.x, t.y);
+  if (t.down) {
+    // The fallen lie where they fell until the fight ends.
+    ((l.y -= cellAt(n, t.x, t.y)?.elevation ?? 0), e.save(), (e.globalAlpha = 0.5), e.translate(l.x, l.y));
+    (e.rotate(t.enemy ? 1.35 : -1.35),
+      ready(a.units)
+        ? sprite(e, a.units, (t.enemy ? 2 : 0) * 4, 0, 0, 22, 1, 1, 'units')
+        : sprite(e, a.norse, 6 + (t.id % 2), 0, 0, 22, 1, 1, 'norse'),
+      e.restore());
+    return;
+  }
   ((l.y -= bridgeAt(n, t.x, t.y)?.buildProgress === 1 ? 7 : (cellAt(n, t.x, t.y)?.elevation ?? 0)),
     (e.fillStyle = t.enemy ? r.enemy : r.friendly),
     (e.strokeStyle = t.enemy ? r.enemy : r.friendly),
@@ -436,7 +489,12 @@ function drawMilitary(e, t, a, n, r, o) {
     ready(a.units)
       ? sprite(e, a.units, s * 4 + c, 0, 0, 26, 1, t.dx - t.dy < 0 ? -1 : 1, 'units')
       : sprite(e, a.norse, 6 + (t.id % 2), 0, 0, 26, 1, 1, 'norse'),
-    e.restore());
+    e.restore(),
+    t.hp < 0.999 &&
+      ((e.fillStyle = 'rgba(20,16,12,.55)'),
+      e.fillRect(l.x - 7, l.y - 33, 14, 3),
+      (e.fillStyle = t.enemy ? r.enemy : r.friendly),
+      e.fillRect(l.x - 7, l.y - 33, 14 * Math.max(0, t.hp), 3)));
 }
 function drawMover(e, t, a, n, r) {
   if (a.ambient) return tw11DrawAmbient(e, t, a);
@@ -545,10 +603,11 @@ function renderIsland(e, t, a, n, r, o, l, s, c, u, d = !1, m = 0, h = {}) {
     (e.stroke(), (p.animating = p.animating || !d));
   }
   let j = raidLocation(t);
-  if (j) {
+  if (j?.spotted) {
     let P = project(j.water.x, j.water.y);
-    z(P.x, P.y, 180) &&
-      sprite(e, l.norse, 4, P.x, P.y + (d ? 0 : Math.sin(o * 0.002) * 1.2), 100, 1, 1, 'norse');
+    (drawRaidRoute(e, t, j, o, d, h.accessibleMarkers, a.zoom),
+      z(P.x, P.y, 180) &&
+        sprite(e, l.norse, 4, P.x, P.y + (d ? 0 : Math.sin(o * 0.002) * 1.2), 100, 1, 1, 'norse'));
   }
   e.restore();
   let Ae = [],

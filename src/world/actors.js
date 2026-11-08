@@ -2,6 +2,8 @@
 import { BUILDING_SIZES, GRID_W, HAVEN, isBuilt } from './catalog.js';
 import { Kn } from './spatial-index.js';
 import { announce, cellAt } from './world.js';
+import { stepProgress } from '../core/step-clock.js';
+import { raidPlan } from '../military/frontier.js';
 
 var B6 = new WeakMap();
 function landCells(e) {
@@ -125,36 +127,69 @@ function path(e, t, a, n) {
   }
   return m.reverse().slice(1);
 }
+// Milestone 2: the raid's landing, target and route come from the simulation (frontier/battle).
+// The ship and route are shown once the watch has spotted the sails: at once with a watchtower or
+// beacon, otherwise on the last day before they land.
 function raidLocation(e) {
-  let t = state(e),
-    a = e.frontier.pending;
+  let t = e.frontier,
+    a = t.pending;
   if (a?.kind !== 'raid') return;
-  if (t.raid?.id === a.id) return t.raid;
-  let n = e.buildings.find((s) => s.kind === 'guardhall' && isBuilt(s)) ?? e.buildings.find(isBuilt) ?? HAVEN,
-    r,
-    o = 1 / 0;
-  for (let s of e.cells) {
-    if (s.land && !s.pond) continue;
-    let c = (s.x - n.x) ** 2 + (s.y - n.y) ** 2;
-    if (c >= o) continue;
-    [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ].some(([d, m]) => clear(e, t, s.x + d + 0.5, s.y + m + 0.5)) &&
-      ((o = c), (r = { x: s.x + 0.5, y: s.y + 0.5 }));
-  }
-  let l = r ?? { x: n.x + 7, y: n.y + 7 };
-  return ((t.raid = { id: a.id, water: l, landing: closest(e, t, l) }), t.raid);
+  let n = t.battle ?? raidPlan(e, a),
+    r = Math.floor(e.time + 1e-8) + 1,
+    o = e.buildings.some((d) => (d.kind === 'watchtower' || d.kind === 'beacon') && isBuilt(d)),
+    l = { x: n.landing[0] + 0.5, y: n.landing[1] + 0.5 },
+    s = t.battle?.raiders.filter((d) => d.hp > 0 && d.s !== 'away' && d.s !== 'wait' && d.s !== 'down') ?? [],
+    c = s.length
+      ? { x: s.reduce((d, m) => d + m.x, 0) / s.length, y: s.reduce((d, m) => d + m.y, 0) / s.length }
+      : l;
+  return {
+    id: a.id,
+    water: { x: n.water[0] + 0.5, y: n.water[1] + 0.5 },
+    landing: l,
+    target: { x: n.tx, y: n.ty },
+    route: n.route,
+    spotted: !!t.battle || o || r >= a.dueDay - 1,
+    watched: o,
+    battle: t.battle,
+    focus: c,
+  };
+}
+/** Battle units for drawing, part of the way between the last two fixed steps. */
+function battleActors(e, t, a, n, r) {
+  let o = n || !a ? 1 : stepProgress(e),
+    l = new Set(),
+    s = (c, u, d) => {
+      if (d && (c.s === 'wait' || c.s === 'away')) return;
+      l.add(u);
+      let m = t.actors.get(u);
+      m ||
+        ((m = { id: u, x: c.x, y: c.y, dx: 1, dy: 0, phase: 0, walking: !1, enemy: d, path: [], target: '' }),
+        t.actors.set(u, m));
+      let h = c.x - c.px,
+        p = c.y - c.py;
+      ((m.x = c.px + h * o),
+        (m.y = c.py + p * o),
+        Math.hypot(h, p) > 0.01 && ((m.dx = h), (m.dy = p)),
+        (m.fighting = c.s === 'fight' || c.s === 'loot'),
+        (m.walking = c.s !== 'down' && (Math.hypot(h, p) > 0.02 || m.fighting)),
+        (m.phase = m.walking ? t.clock * (m.fighting ? 10 : 7) + u * 0.37 : 0),
+        (m.hp = c.max ? c.hp / c.max : 1),
+        (m.down = c.s === 'down'),
+        (m.path = []),
+        (m.target = ''));
+    };
+  r.guards.forEach((c, u) => s(c, u, !1));
+  r.raiders.forEach((c, u) => s(c, 100 + u, !0));
+  for (let [c] of t.actors) l.has(c) || t.actors.delete(c);
+  return [...t.actors.values()];
 }
 function militaryActors(e, t, a = !1) {
   let n = state(e),
     r = n.last ? Math.min(0.1, Math.max(0, (t - n.last) / 1e3)) : 0;
   ((n.last = t), !a && t && (n.clock += r));
+  if (e.frontier.battle) return battleActors(e, n, t, a, e.frontier.battle);
   let o = e.buildings.filter((d) => d.kind === 'guardhall' && isBuilt(d)),
     l = e.frontier.formation ?? 'patrol',
-    s = raidLocation(e),
     c = new Set(),
     u = (d, m, h, p) => {
       c.add(d);
@@ -175,7 +210,14 @@ function militaryActors(e, t, a = !1) {
       let v = closest(e, n, h),
         M = `${v.x},${v.y}/${n.stamp}`;
       if (
-        (g.target !== M && ((g.target = M), (g.path = path(e, n, g, v))),
+        (g.target !== M &&
+          ((g.target = M),
+          (g.path = path(e, n, g, v)),
+          // Back from a fight too far away to path home: rejoin the post.
+          !g.path.length && Math.hypot(g.x - v.x, g.y - v.y) > 18 && ((g.x = v.x), (g.y = v.y))),
+        (g.fighting = !1),
+        (g.down = !1),
+        (g.hp = 1),
         (g.walking = !1),
         !a && t && g.path.length)
       ) {
@@ -229,19 +271,6 @@ function militaryActors(e, t, a = !1) {
               ][g];
     u(d, { x: m.x + 2 + h * 0.5, y: m.y + 4 }, { x: m.x + v[0] + p.x, y: m.y + v[1] + p.y }, !1);
   }
-  if (s) {
-    n.retreatUntil = n.clock + 7;
-    for (let d = 0; d < Math.min(8, Math.max(4, Math.ceil(e.frontier.pending.strength / 5))); d++) {
-      let m = Math.floor(n.clock / 9) % 2;
-      u(
-        100 + d,
-        { x: s.landing.x + (d % 3), y: s.landing.y + Math.floor(d / 3) },
-        { x: s.landing.x + (d % 3) * 1.2 + (m ? 3 : 1), y: s.landing.y + Math.floor(d / 3) * 1.2 + 2 },
-        !0,
-      );
-    }
-  } else if (n.raid && n.clock < n.retreatUntil)
-    for (let d of n.actors.values()) d.enemy && u(d.id, d, n.raid.landing, !0);
   for (let [d] of n.actors) c.has(d) || n.actors.delete(d);
   return [...n.actors.values()];
 }

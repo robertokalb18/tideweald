@@ -12,6 +12,7 @@ import {
   frontierActive,
   guardCapacity,
   projectedLoss,
+  raidForecast,
   reliefAvailable,
   requestRelief,
   threatProtection,
@@ -23,7 +24,8 @@ import {
 import { charterRate, hasLandmark } from '../progression/campaign.js';
 import { I0, Nd, Rd, Sd, Td, U4, W0, Yn, Z4, dp } from './icons.js';
 import { Dialog, DialogDescription, DialogTitle, IslandDialogContent } from './kit.js';
-import { isBuilt } from '../world/catalog.js';
+import { CATALOG, isBuilt } from '../world/catalog.js';
+import { raidLocation } from '../world/actors.js';
 import { SEASON_NAMES, seasonAt } from '../world/seasons.js';
 import { is } from '../world/spatial-index.js';
 
@@ -73,6 +75,63 @@ function settlementLedger(e) {
     })),
   };
 }
+var FORMATION_NOTES = {
+    patrol:
+      'Patrol: guards walk a ring around the raiders\u2019 target and close up in front of it when the horn sounds. They chase raiders who run.',
+    line: 'Shield line: a wall five wide across the raiders\u2019 path, between the beach and their target. Guards take less harm, but they do not chase.',
+    column:
+      'Marching column: guards march fast to meet the band on the beach and charge. They chase far, but take more harm.',
+  },
+  buildingName = (e, t) => {
+    let a = e.buildings.find((n) => n.id === t);
+    return a ? (CATALOG[a.kind]?.name ?? a.kind).toLowerCase() : 'haven';
+  },
+  // What the watch can tell about the coming (or current) raid.
+  raidIntel = (e, t) => {
+    let a = raidLocation(e);
+    if (!a) return null;
+    let n = e.frontier.battle,
+      r = a.spotted ? raidForecast(e, t) : null,
+      o = buildingName(e, n?.target ?? t.target),
+      l = Math.round(Math.hypot(a.landing.x - a.target.x, a.landing.y - a.target.y));
+    if (n) {
+      let c = n.raiders.filter((m) => m.hp > 0 && m.s !== 'down' && m.s !== 'away').length,
+        u = n.guards.filter((m) => m.s !== 'down').length,
+        d = Math.round(n.raiders.reduce((m, h) => m + h.c, 0) * 100);
+      return {
+        label: 'RAIDERS ASHORE',
+        lines: [
+          `${c} of ${n.raiders.length} raiders still fighting \xB7 ${u} of ${n.guards.length} guards standing${d ? ` \xB7 ${d}% of the ${o}\u2019s goods carried off` : ''}${n.gate > 0 ? ' \xB7 the palisade gate holds' : ''}.`,
+          forecastText(r, o),
+        ],
+      };
+    }
+    return {
+      label: null,
+      lines: a.spotted
+        ? [
+            `${a.watched ? 'The watchtower has' : 'Fishermen have'} spotted their sails. They will land ${l} tiles from the ${o} and march on it; their route is marked on the map.`,
+            forecastText(r, o),
+          ]
+        : [
+            `They will make for the ${o}, but no one knows where they will land. A watchtower or beacon would spot their sails at once; otherwise they are seen on Day ${t.dueDay - 1}.`,
+          ],
+    };
+  },
+  forecastText = (e, t) =>
+    e
+      ? 'Forecast if nothing changes: ' +
+        (e.burned
+          ? `they reach the ${t} unopposed and set it alight.`
+          : e.repelled
+            ? e.lost > 0.01
+              ? `they are driven off with ${Math.round(e.lost * 100)}% of its goods.`
+              : e.gateHeld
+                ? 'the palisade gate holds until they give up.'
+                : `they are driven off${e.fell ? `; about ${e.fell} of ${e.raiders} fall` : ''}.`
+            : `they get away with ${Math.round(e.lost * 100)}% of the ${t}\u2019s goods.`) +
+        (e.guardsDown ? ` About ${e.guardsDown} guard${e.guardsDown === 1 ? '' : 's'} would be cut down.` : '')
+      : '';
 var mT = [Sd, Nd, W0, Rd],
   resourceText = (e) =>
     Object.entries(e)
@@ -97,7 +156,9 @@ function FrontierPanel({
     p = !!trainingBlock(e),
     g = trainingPairs(e),
     v = trainingSlots(e),
-    M = Math.floor(e.time + 1e-8) + 1;
+    M = Math.floor(e.time + 1e-8) + 1,
+    I = u?.kind === 'raid' ? raidIntel(e, u) : null,
+    hidden = I && !raidLocation(e)?.spotted;
   return (0, jsxRuntime.jsx)(Dialog, {
     open: t,
     onOpenChange: a,
@@ -115,28 +176,29 @@ function FrontierPanel({
                 className: 'watch-label',
                 children: [
                   (0, jsxRuntime.jsx)(dp, { size: 17 }),
-                  ' WARNING \xB7 ',
-                  Math.max(0, u.dueDay - M),
-                  ' DAYS',
+                  ...(I?.label ? [' ', I.label] : [' WARNING \xB7 ', Math.max(0, u.dueDay - M), ' DAYS']),
                 ],
               }),
               (0, jsxRuntime.jsx)('h3', { children: u.title }),
               (0, jsxRuntime.jsxs)('p', {
                 children: [
-                  'Arrives Day ',
+                  e.frontier.battle ? 'Landed Day ' : 'Arrives Day ',
                   u.dueDay,
                   u.kind === 'raid' ? ` \xB7 enemy strength ${u.strength}` : '',
                   '. ',
                   THREAT_ADVICE[u.kind],
                 ],
               }),
+              ...(I?.lines ?? [])
+                .filter(Boolean)
+                .map((w, y) => (0, jsxRuntime.jsx)('p', { className: 'raid-intel', children: w }, `intel${y}`)),
               (0, jsxRuntime.jsxs)('div', {
                 className: 'watch-metrics',
                 children: [
                   (0, jsxRuntime.jsxs)('strong', {
                     children: [
-                      Math.round(threatProtection(e, u) * 100),
-                      '%',
+                      hidden ? '?' : Math.round(threatProtection(e, u) * 100),
+                      hidden ? '' : '%',
                       (0, jsxRuntime.jsx)('small', { children: 'current protection' }),
                     ],
                   }),
@@ -150,13 +212,17 @@ function FrontierPanel({
               }),
               (0, jsxRuntime.jsxs)('p', {
                 className: 'loss-preview',
-                children: [
-                  'If it arrived now: ',
-                  Object.values(projectedLoss(e, u)).some((w) => w > 0)
-                    ? 'lose ' + resourceText(projectedLoss(e, u))
-                    : 'no supply losses',
-                  '. Your stores and defenses on arrival determine the final losses.',
-                ],
+                children: hidden
+                  ? ['If it arrived now: unknown until their sails are spotted.']
+                  : [
+                      e.frontier.battle ? 'If the fight goes as forecast: ' : 'If it arrived now: ',
+                      Object.values(projectedLoss(e, u)).some((w) => w > 0)
+                        ? 'lose ' + resourceText(projectedLoss(e, u))
+                        : 'no supply losses',
+                      u.kind === 'raid'
+                        ? '. Formation, guards and where your towers and gates stand decide the result.'
+                        : '. Your stores and defenses on arrival determine the final losses.',
+                    ],
               }),
               u.kind === 'raid' &&
                 (0, jsxRuntime.jsxs)('button', {
@@ -164,7 +230,10 @@ function FrontierPanel({
                   onClick: () => {
                     (a(!1), l());
                   },
-                  children: ['Find approaching raiders ', (0, jsxRuntime.jsx)(I0, { size: 16 })],
+                  children: [
+                    e.frontier.battle ? 'Watch the fight ' : hidden ? 'Show their target ' : 'Show the landing ',
+                    (0, jsxRuntime.jsx)(I0, { size: 16 }),
+                  ],
                 }),
             ],
           }),
@@ -238,7 +307,10 @@ function FrontierPanel({
               ),
             }),
             (0, jsxRuntime.jsx)('p', {
-              children: 'Shield line: +15% against raiders. Patrol: +5%. Column: for moving out.',
+              className: 'formation-note',
+              children:
+                FORMATION_NOTES[c.formation ?? 'patrol'] +
+                (e.frontier.battle ? ' You can change formation during the fight.' : ''),
             }),
             (0, jsxRuntime.jsxs)('details', {
               className: 'army-details',
@@ -263,7 +335,7 @@ function FrontierPanel({
                 }),
                 (0, jsxRuntime.jsx)('p', {
                   children:
-                    'Each guard adds 3 defense and costs 1 gold and 0.75 food a day. Watchtowers add 6 defense, palisades 4. A raid that meets less than 70% of its strength burns a building.',
+                    'Defense is a rough guide: each guard counts 3, a watchtower 6, a palisade gate 4. In a raid, where they stand decides it: towers shoot raiders within 7 tiles, and a palisade gate shields stores within 5 tiles. If half the band reaches unguarded stores, they set them alight. Each guard costs 1 gold and 0.75 food a day.',
                 }),
                 (0, jsxRuntime.jsxs)('div', {
                   className: 'watch-actions',

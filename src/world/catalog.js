@@ -3,11 +3,9 @@ import { WORKSHOPS, WORKSHOP_ITEMS } from '../economy/workshops.js';
 import { DEFENSE_ITEMS } from '../military/frontier.js';
 import { BRIDGE_ITEMS } from '../settlement/bridge-catalog.js';
 import { Kd } from './spatial-index.js';
+import { GRID_H, GRID_W, HAVEN } from './grid.js';
 
-var GRID_W = 384,
-  GRID_H = 320;
-var HAVEN = { x: 192.5, y: 163.5 },
-  MAX_POPULATION = 960,
+var MAX_POPULATION = 960,
   MAP_LIMIT = 2e3,
   BUILDING_SIZES = {
     cottage: { size: 82, radius: 0.8 },
