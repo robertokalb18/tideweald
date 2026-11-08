@@ -20,4 +20,7 @@ New rules from Milestone 1:
   `tests/browser/layout.mjs` must keep at least 75% of the map visible on a phone held sideways.
 - Milestone 4, chains and needs, is in v16.15 (`docs/MILESTONE-4.md`). Chains and tiers are derived from the
   buildings and never saved; keep it that way unless a save format change is planned with a migration.
-- Next milestone: 5, campaign pacing (drop the 3-day chapter floor, a covenant finale, sandbox settings).
+- Milestone 5 (pacing, finale, free-build rules) is in v16.16 (`docs/MILESTONE-5.md`). The campaign test compares
+  chapters with v16.11 minus the removed day floor; any other change to chapter mechanics must be deliberate
+  and named in that test the same way, never by regenerating the fixture.
+- Next: the optional Milestones 6 (technologies, fog and discoveries) and 7 (boats, trade, a rival island).

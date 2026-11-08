@@ -16,6 +16,8 @@ import { frontierActive } from '../military/frontier.js';
 import { describeBackup, isNativeApp, nativePlatform, shareFile } from '../persistence/save.js';
 import {
   CHAPTERS,
+  FINALE_TEXT,
+  openFreeBuild,
   beginCampaign,
   buildingResource,
   campaignObjectives,
@@ -3339,6 +3341,58 @@ function Home() {
                 ),
               ),
             }),
+            // Milestone 5: free build has its own rules, kept with the island.
+            t.current.story.mode === 'sandbox' &&
+              (0, jsxRuntime.jsxs)('div', {
+                className: 'settings-list sandbox-rules',
+                children: [
+                  (0, jsxRuntime.jsx)('h3', { children: 'Free build rules (this island)' }),
+                  ...[
+                    [
+                      'threats',
+                      'Raids and weather threats',
+                      'Red Sail raids and floods, gales, wildfires and frost arrive every 8\u201310 days, as in the campaign. The first comes at least six days after you switch this on.',
+                    ],
+                    [
+                      'upkeep',
+                      'Daily upkeep',
+                      'Settlers eat, guards are paid, and winter hearths burn timber every day. Morale rises and falls with supplies.',
+                    ],
+                  ].map(([S, B, ae]) =>
+                    (0, jsxRuntime.jsxs)(
+                      'label',
+                      {
+                        className: 'setting-row',
+                        children: [
+                          (0, jsxRuntime.jsx)('input', {
+                            type: 'checkbox',
+                            checked: !!t.current.story.rules?.[S],
+                            onChange: (se) => {
+                              let ke = t.current,
+                                Mt = Math.floor(ke.time + 1e-8) + 1;
+                              ((ke.story.rules = { threats: !1, upkeep: !1, ...ke.story.rules, [S]: se.target.checked }),
+                                S === 'threats' &&
+                                  se.target.checked &&
+                                  !ke.frontier.pending &&
+                                  (ke.frontier.nextEventDay = Math.max(ke.frontier.nextEventDay, Mt + 6)),
+                                S === 'upkeep' && (ke.frontier.lastDay = Mt),
+                                ke.revision++,
+                                ze());
+                            },
+                          }),
+                          (0, jsxRuntime.jsxs)('span', {
+                            children: [
+                              (0, jsxRuntime.jsx)('b', { children: B }),
+                              (0, jsxRuntime.jsx)('small', { children: ae }),
+                            ],
+                          }),
+                        ],
+                      },
+                      S,
+                    ),
+                  ),
+                ],
+              }),
             (0, jsxRuntime.jsxs)('div', {
               className: 'diary-row',
               children: [
@@ -3577,6 +3631,58 @@ function Home() {
       }),
       (() => {
         if (!rl) return null;
+        let fin = t.current.story.finale;
+        // Milestone 5: the covenant finale replaces the card for the last chapter.
+        if (rl.to === CHAPTERS.length && fin)
+          return (0, jsxRuntime.jsx)(Dialog, {
+            open: !0,
+            onOpenChange: (S) => {
+              S || nh(null);
+            },
+            children: (0, jsxRuntime.jsxs)(IslandDialogContent, {
+              className: 'chapter-card-dialog finale-dialog',
+              children: [
+                (0, jsxRuntime.jsxs)('div', {
+                  className: 'chapter-card-head',
+                  children: [
+                    (0, jsxRuntime.jsx)('span', { className: 'eyebrow', children: 'THE SAGA OF HAVEN \xB7 48 CHAPTERS' }),
+                    (0, jsxRuntime.jsx)(DialogTitle, { children: 'The covenant holds' }),
+                    (0, jsxRuntime.jsx)(DialogDescription, { children: FINALE_TEXT }),
+                  ],
+                }),
+                (0, jsxRuntime.jsx)('ul', {
+                  className: 'chapter-card-goals finale-stats',
+                  children: [
+                    ['Days on the island', fin.day],
+                    ['Settlers', fin.population],
+                    ['Buildings standing', fin.buildings],
+                    ['Raids driven off', fin.raids],
+                    ['Winters survived', fin.winters],
+                    ['Kinds of wildlife', fin.species],
+                    ['Council decisions', fin.decisions],
+                  ].map(([S, B]) =>
+                    (0, jsxRuntime.jsxs)(
+                      'li',
+                      { children: [S, (0, jsxRuntime.jsx)('b', { children: B.toLocaleString() })] },
+                      S,
+                    ),
+                  ),
+                }),
+                (0, jsxRuntime.jsx)('button', {
+                  className: 'chapter-card-go',
+                  onClick: () => nh(null),
+                  children: 'Keep taking commissions',
+                }),
+                (0, jsxRuntime.jsx)('button', {
+                  className: 'chapter-card-go finale-free',
+                  onClick: () => {
+                    (openFreeBuild(t.current), nh(null), ze());
+                  },
+                  children: 'Carry Haven into free build',
+                }),
+              ],
+            }),
+          });
         let S = CHAPTERS[rl.from],
           B = currentChapter(t.current),
           ae = campaignObjectives(t.current)

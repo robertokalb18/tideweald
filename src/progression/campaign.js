@@ -295,8 +295,41 @@ function completeChapter(e) {
       `${a.title} completed`,
       `+${a.reward} gold. ${t.chapter === CHAPTERS.length ? 'The Haven charter is complete. New commissions are now available.' : `Next: ${currentChapter(e).title}.`}`,
     ),
+    t.chapter === CHAPTERS.length && !t.finale && covenantFinale(e),
     !0
   );
+}
+// Milestone 5: the campaign ends with the covenant. The record is kept in the save, the journal tells the
+// epilogue, and the player chooses to keep taking commissions or to carry the island into free build.
+var FINALE_TEXT =
+  'Fourteen ships reached Greenland; ours reached Haven. The families who waded ashore with nothing now keep a hall, a hof and a harbor of their own, and the Red Sails have learned to row past. Tonight they swear the covenant again at the Thing stone: to keep the stores full, the watch awake and the island green, for their children\u2019s children.';
+function covenantFinale(e) {
+  let t = e.story;
+  ((t.finale = {
+    day: Math.floor(e.time + 1e-8) + 1,
+    raids: e.frontier.raidsRepelled,
+    winters: e.frontier.winters,
+    population: t.population,
+    buildings: e.buildings.filter(isBuilt).length,
+    species: new Set(e.animals.filter((a) => a.health > 0.5).map((a) => a.kind)).size,
+    decisions: (t.decisions ?? []).length,
+  }),
+    storyEvent(e, 'The covenant holds', FINALE_TEXT));
+}
+/** After the finale: the same island in free build, with threats and upkeep on until the player changes them. */
+function openFreeBuild(e) {
+  let t = e.story;
+  return t.mode !== 'campaign' || !t.finale
+    ? !1
+    : (continueFreebuild(e),
+      (t.rules = { threats: !0, upkeep: !0 }),
+      e.revision++,
+      storyEvent(
+        e,
+        'Free build',
+        'Haven is yours to shape. Raids, weather and daily upkeep continue; change them in Settings under Free build rules.',
+      ),
+      !0);
 }
 function stockHarbor(e) {
   if (e.story.mode !== 'campaign') return 0;
@@ -337,6 +370,7 @@ function continueFreebuild(e) {
   ((e.story.mode = 'sandbox'),
     (e.story.started = !0),
     (e.frontier.pending = void 0),
+    (e.frontier.battle = void 0),
     (e.autoWeather = !1),
     (e.weather = 'sun'),
     announce(e, 'Free build. Your island is preserved; time and weather are yours to control.'));
@@ -498,4 +532,8 @@ function cancelConstruction(e, t) {
   );
 }
 
-export { CHAPTERS, beginCampaign, buildingResource, campaignObjectives, cancelConstruction, chapterDelivery, charterRate, completeChapter, constructionRate, continueFreebuild, currentChapter, hasLandmark, placementPreview, stockHarbor, tradeMultiplier, updateCampaign };
+export { CHAPTERS, beginCampaign, buildingResource, campaignObjectives, cancelConstruction, chapterDelivery, charterRate, completeChapter, constructionRate, continueFreebuild, currentChapter, hasLandmark, placementPreview, stockHarbor, tradeMultiplier, updateCampaign,
+  FINALE_TEXT,
+  covenantFinale,
+  openFreeBuild,
+};

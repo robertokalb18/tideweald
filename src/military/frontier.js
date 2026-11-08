@@ -67,7 +67,12 @@ var DEFENSE_ITEMS = [
     upkeep: empty(),
   }),
   completed = (e, t) => e.buildings.filter((a) => a.kind === t && a.buildProgress >= 1 - 1e-8).length,
-  frontierActive = (e) => e.story.mode === 'campaign' && e.story.started && e.story.settled,
+  // Milestone 5: free build can switch on threats and daily upkeep (story.rules); the campaign always has both.
+  threatsOn = (e) =>
+    e.story.started && (e.story.mode === 'campaign' ? !!e.story.settled : !!e.story.rules?.threats),
+  upkeepOn = (e) =>
+    e.story.started && (e.story.mode === 'campaign' ? !!e.story.settled : !!e.story.rules?.upkeep),
+  frontierActive = (e) => threatsOn(e) || upkeepOn(e),
   guardCapacity = (e) => Math.min(18, completed(e, 'guardhall') * 6),
   defenseStrength = (e) =>
     Math.round(
@@ -79,11 +84,11 @@ var DEFENSE_ITEMS = [
     frontierActive(e) ? Math.max(0.65, councilEffects(e).moraleFloor / 100, e.frontier.morale / 100) : 1,
   foodCapacity = (e) => 1e3 + completed(e, 'granary') * 1500 + completed(e, 'storehouse') * 800,
   foodSpoilage = (e) =>
-    frontierActive(e)
+    upkeepOn(e)
       ? Math.floor(Math.max(0, e.wallet.food - foodCapacity(e)) * 0.2 * councilEffects(e).spoilage)
       : 0;
 function dailyNeeds(e) {
-  if (!frontierActive(e)) return empty();
+  if (!upkeepOn(e)) return empty();
   let t = e.story.population,
     a = e.frontier.garrison,
     n = councilEffects(e),
@@ -407,6 +412,7 @@ function stepFrontier(e, dt = 0.025) {
       ));
     return;
   }
+  if (a > t.lastDay && !upkeepOn(e)) t.lastDay = a;
   if (a > t.lastDay) {
     t.lastDay = a;
     let r = dailyNeeds(e);
@@ -447,7 +453,7 @@ function stepFrontier(e, dt = 0.025) {
       t.battle && stepBattle(e, t.battle, dt, battleOpts(e)) && resolveRaid(e, t.pending, t.battle));
   } else t.pending && a >= t.pending.dueDay && resolveThreat(e, t.pending);
   let n = completed(e, 'watchtower') || completed(e, 'beacon') ? 4 : 3;
-  if (!t.pending && a >= t.nextEventDay - n) {
+  if (!t.pending && threatsOn(e) && a >= t.nextEventDay - n) {
     let r = t.eventNumber++,
       o = seasonAt(t.nextEventDay - 1).index,
       l = t.scripted,
@@ -475,6 +481,8 @@ function stepFrontier(e, dt = 0.025) {
 }
 
 export {
+  threatsOn,
+  upkeepOn,
   raidForecast,
   raidPlan,
   DEFENSE_ITEMS,

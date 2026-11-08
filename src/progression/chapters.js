@@ -16,7 +16,9 @@ var ACTS = [
     text: a,
     hint: n,
     reward: r,
-    goals: [...(o ?? []), _('days', Math.min(s, 3), 'Days in this chapter')],
+    // Milestone 5: no day floor. v16 also required min(s, 3) days in every chapter; a chapter now ends as soon
+    // as its goals are met. (`s` is kept in the signature so the chapter table reads as before.)
+    goals: [...(o ?? [])],
     shipment: l,
     settlers: c,
   }),

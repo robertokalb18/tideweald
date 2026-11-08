@@ -300,6 +300,19 @@ var SaveSchema = z.object({
       .max(8)
       .optional(),
     ledgerDay: xe.optional(),
+    // Milestone 5: free-build rules, and the record kept when the campaign's last chapter is done.
+    rules: z.object({ threats: z.boolean(), upkeep: z.boolean() }).optional(),
+    finale: z
+      .object({
+        day: xe,
+        raids: xe,
+        winters: xe,
+        population: xe,
+        buildings: xe,
+        species: xe,
+        decisions: xe,
+      })
+      .optional(),
   }),
 });
 function parseWithRepair(e) {

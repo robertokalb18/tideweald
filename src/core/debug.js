@@ -3,7 +3,7 @@ import { serializeWorld, serializeWorldAsync, readIslandText } from '../persiste
 import { encodeStoredSave, encodeStoredSaveOffThread } from '../persistence/compression.js';
 import { advanceWorld } from './simulation.js';
 import { staticsFor } from '../render/world-draw.js';
-import { CHAPTERS } from '../progression/campaign.js';
+import { CHAPTERS, covenantFinale, openFreeBuild } from '../progression/campaign.js';
 import { COUNCIL_DECISIONS } from '../progression/council.js';
 import { CATALOG } from '../world/catalog.js';
 
@@ -17,6 +17,8 @@ export function installDebugApi() {
     packOffThread: encodeStoredSaveOffThread,
     read: readIslandText,
     chapters: CHAPTERS,
+    covenantFinale,
+    openFreeBuild,
     council: COUNCIL_DECISIONS,
     catalog: CATALOG,
   };
