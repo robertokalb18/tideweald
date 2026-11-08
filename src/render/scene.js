@@ -45,7 +45,7 @@ function drawStatic(e, t, a, n) {
     : a.kind === 'plant'
       ? drawPlant(e, a.value, t.images, t.world, n, t.season, t.wet, a)
       : a.kind === 'building'
-        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal, a.yard, t.season)
+        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal, a.yard, t.season, a.tier)
         : a.kind === 'feature'
           ? drawFeature(e, a.value, t.images, n)
           : drawObject(e, a.value);
@@ -822,6 +822,8 @@ function buildingStatus(e, t) {
     ? { icon: 'full', text: 'Storage full \u2014 collect to resume' }
     : a.rate <= 0 && buildingResource(t.kind) !== 'gold'
       ? { icon: 'idle', text: a.reason ?? 'Not producing' }
+      : (a.supply ?? 1) < 1
+        ? { icon: 'short', text: a.reason ?? 'Short of supplies' }
       : t.stored >= 20
         ? { icon: 'ready', text: `${Math.floor(t.stored)} ready` }
         : { icon: null, text: '' };
@@ -829,8 +831,14 @@ function buildingStatus(e, t) {
 function drawStatusSign(e, t, a, n, r, o) {
   let l = Math.max(0.9, 0.8 / r);
   (e.save(), e.translate(t, a), e.scale(l, l));
-  let s =
-    n === 'idle'
+  // 'short' (Milestone 4): a chain workshop at half rate for want of a supplier. Amber triangle.
+  let short = n === 'short';
+  short && (n = 'idle');
+  let s = short
+    ? o
+      ? '#c89b3c'
+      : '#e4b24c'
+    : n === 'idle'
       ? o
         ? '#b8452f'
         : '#d86a4f'
@@ -888,6 +896,29 @@ function drawStatusSign(e, t, a, n, r, o) {
           e.stroke()),
     e.restore());
 }
+// Milestone 4: when a chain workshop is selected, dotted lines run to the buildings that supply it.
+function drawSupplyLinks(e, t, a, n, r, o) {
+  let l = production(t, a).links ?? [];
+  if (!l.length) return;
+  e.save();
+  ((e.strokeStyle = o ? 'rgba(47,93,145,.85)' : 'rgba(150,220,240,.9)'),
+    (e.lineWidth = 2 / Math.max(0.35, r)),
+    e.setLineDash([5 / Math.max(0.35, r), 5 / Math.max(0.35, r)]));
+  for (let s of l) {
+    let c = t.buildings.find((d) => d.id === s);
+    if (!c) continue;
+    let u = project(c.x, c.y);
+    ((u.y -= cellAt(t, c.x, c.y)?.elevation ?? 0),
+      e.beginPath(),
+      e.moveTo(n.x, n.y),
+      e.lineTo(u.x, u.y),
+      e.stroke(),
+      e.beginPath(),
+      e.arc(u.x, u.y, 4 / Math.max(0.35, r), 0, Math.PI * 2),
+      e.stroke());
+  }
+  e.restore();
+}
 function drawOverlays(e, t, a, n, r, o, l, s, c, u, d, m, h, p) {
   let g = t.world,
     v = t.style === 'carta',
@@ -911,6 +942,7 @@ function drawOverlays(e, t, a, n, r, o, l, s, c, u, d, m, h, p) {
     if (((x.y -= cellAt(g, k.x, k.y)?.elevation ?? 0), !d(x.x, x.y, 160))) continue;
     let T = BUILDING_SIZES[k.kind]?.size ?? 132,
       C = !!c && Math.hypot(c.x - k.x, c.y - k.y) < 1.8;
+    C && isBuilt(k) && drawSupplyLinks(e, g, k, x, a.zoom, v);
     if (
       (C &&
         ((e.strokeStyle = v ? '#b8452f' : '#f6e3a5'),

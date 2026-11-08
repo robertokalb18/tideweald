@@ -1,5 +1,7 @@
 // Recovered from the Tideweald v16.11 build. Module: economy/production
 import { WORKSHOPS } from './workshops.js';
+import { CHAINS, GOODS, SUPPLY_RANGE, goodsBonus, islandGoods, supplyOf } from './chains.js';
+import { TIERS, houseNeeds, houseRent, houseResidents, nextNeed } from './needs.js';
 import { DEFENSE_ITEMS, moraleMultiplier } from '../military/frontier.js';
 import { buildingResource, charterRate, hasLandmark, tradeMultiplier } from '../progression/campaign.js';
 import { councilEffects } from '../progression/council.js';
@@ -110,10 +112,11 @@ function production(e, t, a = !1) {
       (c = 2 + cottageIndex(e, productionContext(e)).count(t.x, t.y, 6, () => !0) * 0.7),
     t.kind === 'cottage')
   ) {
-    let p = servicesNear(e, t);
-    ((c = 0.8 + 0.6 * p),
-      p < 3 &&
-        (d = `Rent ${(0.8 + 0.6 * p).toFixed(1)} gold/day \xB7 a well, market and hof within six tiles each add 0.6`));
+    // Milestone 4: rent follows the household's needs tier (economy/needs.js).
+    let p = houseNeeds(e, t),
+      g = nextNeed(e, t);
+    ((c = houseRent(e, t)),
+      (d = `Tier ${p.tier}, ${TIERS[p.tier].name} \xB7 ${TIERS[p.tier].residents} residents \xB7 rent ${c.toFixed(1)} gold/day${g ? ` \xB7 next tier needs ${g}` : ''}`));
   }
   if ((t.kind === 'farm' && hasLandmark(e, 'windmill') && (c *= 1.25), WORKSHOPS[t.kind])) {
     let p = WORKSHOPS[t.kind];
@@ -182,12 +185,35 @@ function production(e, t, a = !1) {
             ? 'On watch \xB7 +6 defense, earlier warnings'
             : 'Perimeter secured \xB7 +4 defense',
     };
+  // Milestone 4: chains. A chain workshop without a supplier nearby works at half rate; boats and tools
+  // from supplied workshops raise fishing, farming, sawing and quarrying.
+  let chain = CHAINS[t.kind] ? supplyOf(e, t) : null,
+    goods = goodsBonus(e, t.kind);
+  if (c > 0 && chain) {
+    c *= chain.factor;
+    d === 'Working' &&
+      (d = chain.missing
+        ? `Half rate \xB7 no ${chain.missing} supplier within ${SUPPLY_RANGE} tiles`
+        : chain.milled
+          ? 'Working \xB7 flour from the mill +30%'
+          : `Working \xB7 supplied with ${CHAINS[t.kind].goods}`);
+  }
+  if (c > 0 && goods > 1) {
+    c *= goods;
+    d === 'Working' &&
+      (d = `Working \xB7 ${Object.entries(GOODS)
+        .filter(([n, v]) => islandGoods(e)[n] && v.kinds.includes(t.kind))
+        .map(([, v]) => v.text)
+        .join(' and ')} +${Math.round((goods - 1) * 100)}%`);
+  }
   let m = moraleMultiplier(e),
     h = e.story.mode === 'campaign' && e.weather === 'storm' ? (hasLandmark(e, 'lighthouse') ? 0.9 : 0.6) : 1;
   return {
     resource: u,
     rate: c * l * s * h * m,
     capacity: o.capacity,
+    supply: chain ? chain.factor : 1,
+    links: chain?.links ?? [],
     reason:
       m < 1
         ? `Low morale \xB7 production at ${Math.round(m * 100)}%`
@@ -266,7 +292,7 @@ function worldStats(e) {
     o = 0;
   for (let c of t) ((n += c.moisture), (r += c.soil), (c.toxicity > 0.15 || c.radiation > 0.15) && o++);
   let l = e.buildings.reduce((c, u) => c + Math.floor(u.stored), 0) + Math.floor(e.orchardFood),
-    s = e.buildings.filter((c) => c.kind === 'cottage' && isBuilt(c)).length * 4;
+    s = e.buildings.reduce((c, u) => c + (u.kind === 'cottage' ? houseResidents(e, u) : 0), 0);
   return {
     day: Math.floor(e.time + 1e-8) + 1,
     hour: Math.floor((e.time % 1) * 24),

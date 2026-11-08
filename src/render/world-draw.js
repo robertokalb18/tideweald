@@ -7,6 +7,7 @@ import { drawStatic } from './scene.js';
 import { plantLook, preparedPlant, preparedSprite, spriteRect } from './sprites.js';
 import { contourRings, meadowPattern, texturePattern } from './textures.js';
 import { kc } from './tile-cache.js';
+import { houseNeeds } from '../economy/needs.js';
 import { bridgeAt, bridgeTiles } from '../settlement/bridges.js';
 import { BUILDING_SIZES, CATALOG, GRID_H, GRID_W, clamp, isBuilt } from '../world/catalog.js';
 import { cellAt } from '../world/world.js';
@@ -169,14 +170,67 @@ function drawYard(e, t, a, n, r) {
   }
   e.restore();
 }
-function drawBuildingStatic(e, t, a, n, r, o, yard = !1, season = 0) {
+// Milestone 4: a longhouse shows its needs tier. Tier 2 stacks a woodpile by the door; tier 3 adds a carved
+// gable pole with a pennant and draws the house a little larger. The tier is part of the static entry's key.
+function drawTierBack(e, t, a, n) {
+  if (n < 3) return;
+  let r = a === PALETTES.carta,
+    o = t.x - 24,
+    l = t.y - 2;
+  ((e.strokeStyle = r ? '#4a3420' : '#5a3d22'),
+    (e.lineWidth = 1.6),
+    (e.lineCap = 'round'),
+    e.beginPath(),
+    e.moveTo(o, l),
+    e.lineTo(o, l - 52),
+    e.stroke(),
+    (e.fillStyle = r ? '#b8452f' : '#d0583c'),
+    e.beginPath(),
+    e.moveTo(o, l - 52),
+    e.quadraticCurveTo(o + 9, l - 50, o + 16, l - 46),
+    e.quadraticCurveTo(o + 8, l - 44, o, l - 41),
+    e.closePath(),
+    e.fill(),
+    (e.strokeStyle = r ? '#2b2118' : '#3a2616'),
+    (e.lineWidth = 0.8),
+    e.stroke(),
+    (e.fillStyle = r ? '#c89b3c' : '#e4c77f'),
+    e.beginPath(),
+    e.arc(o, l - 53, 1.8, 0, Math.PI * 2),
+    e.fill());
+}
+function drawTierFront(e, t, a, n) {
+  if (n < 2) return;
+  let r = a === PALETTES.carta,
+    o = t.x + 22,
+    l = t.y + 10;
+  for (let s = 0; s < 3; s++)
+    for (let c = 0; c < 3 - s; c++) {
+      let u = o + c * 4.2 + s * 2.1,
+        d = l - s * 3.6;
+      ((e.fillStyle = r ? '#9a7448' : '#a77a45'),
+        e.beginPath(),
+        e.ellipse(u, d, 2.3, 1.8, 0, 0, Math.PI * 2),
+        e.fill(),
+        (e.strokeStyle = r ? '#3b2a1a' : '#4a3018'),
+        (e.lineWidth = 0.7),
+        e.stroke(),
+        (e.fillStyle = r ? '#d9bf8a' : '#e0c58e'),
+        e.beginPath(),
+        e.arc(u, d, 0.9, 0, Math.PI * 2),
+        e.fill());
+    }
+}
+function drawBuildingStatic(e, t, a, n, r, o, yard = !1, season = 0, houseTier = 0) {
   let l = project(t.x, t.y);
   l.y -= cellAt(n, t.x, t.y)?.elevation ?? 0;
-  let s = BUILDING_SIZES[t.kind]?.size ?? 132;
+  let s = (BUILDING_SIZES[t.kind]?.size ?? 132) * (houseTier >= 3 ? 1.08 : 1);
   if (isBuilt(t)) {
     yard && drawYard(e, t, l, o, season);
+    houseTier && drawTierBack(e, l, o, houseTier);
     let c = buildingSprite(t);
-    sprite(e, a[c.atlas], c.index, l.x, l.y + s * 0.15, s, 1, t.orientation ? -1 : 1, c.atlas, tier(s * r));
+    (sprite(e, a[c.atlas], c.index, l.x, l.y + s * 0.15, s, 1, t.orientation ? -1 : 1, c.atlas, tier(s * r)),
+      houseTier && drawTierFront(e, l, o, houseTier));
   } else {
     let c = buildingSprite(t),
       u = a[c.atlas],
@@ -390,13 +444,16 @@ function staticsFor(e, t) {
         mix(mix(2166136261, r.id), r.kind.length * 131 + r.kind.charCodeAt(0)),
         s * 4 + (r.orientation ?? 0),
       );
-    let yard = yards.has(r.id);
+    let yard = yards.has(r.id),
+      tier = r.kind === 'cottage' ? houseNeeds(e, r).tier : 0;
     ((c = mix(mix(c, Math.round(o.x * 2)), Math.round(o.y * 2))),
       yard && (c = mix(c, 7001 + t)),
+      tier > 1 && (c = mix(c, 7100 + tier)),
       a.push({
         kind: 'building',
         value: r,
         yard,
+        tier,
         depth: r.x + r.y,
         order: n++,
         x0: o.x - l * 0.56,

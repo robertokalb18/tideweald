@@ -18,4 +18,6 @@ New rules from Milestone 1:
   and keep its only import the `world/grid.js` leaf. The Army forecast must keep using the same code as the fight.
 - Milestone 3, "One look", is in v16.14 (`docs/MILESTONE-3.md`). New art follows `docs/ART-BIBLE.md`.
   `tests/browser/layout.mjs` must keep at least 75% of the map visible on a phone held sideways.
-- Next milestone: 4, production chains and needs tiers. See the audit doc.
+- Milestone 4, chains and needs, is in v16.15 (`docs/MILESTONE-4.md`). Chains and tiers are derived from the
+  buildings and never saved; keep it that way unless a save format change is planned with a migration.
+- Next milestone: 5, campaign pacing (drop the 3-day chapter floor, a covenant finale, sandbox settings).

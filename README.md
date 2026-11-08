@@ -10,7 +10,7 @@ It plays exactly like v16.11 apart from the Milestone 1 changes listed below, an
 
 ```sh
 npm install
-npm test             # 22 Node tests: saves, campaign data, simulation, decor, raids
+npm test             # 27 Node tests: saves, campaign data, simulation, decor, raids, economy
 npm run build        # writes dist/
 npm run serve        # http://localhost:8080
 npm run test:browser # with the server running: browser smoke test
@@ -27,7 +27,7 @@ Open `http://localhost:8080/?diagnostics` to see the performance overlay. It sho
 |---|---|
 | `src/core` | Simulation clock (fixed steps), diagnostics, developer API |
 | `src/world` | Map grid, catalog of everything buildable, world creation, seasons, ecosystem, wildlife, villagers and soldiers |
-| `src/economy` | Workshops and production |
+| `src/economy` | Workshops and production; supply chains (`chains.js`) and needs tiers (`needs.js`) |
 | `src/settlement` | Bridges and the placement tools |
 | `src/military` | Threats, guards and upkeep (`frontier.js`); raids fought on the map (`battle.js`) |
 | `src/progression` | 48 chapters, council decisions, campaign flow, orders and the folio collection |
@@ -65,3 +65,9 @@ the result with the same rules. Details, balance tables and review notes: `docs/
 An art bible (`docs/ART-BIBLE.md`), Norse longhouses throughout, fenced yards, three water depths, hearth smoke
 in the cold seasons, and a compact layout for phones held sideways (78% of the map visible, up from 72%).
 Details: `docs/MILESTONE-3.md`.
+
+## Milestone 4 changes (v16.15): chains and needs
+
+Bakeries, smokehouses, boatbuilders and forges need a supplier within 8 tiles (or work at half rate); a supplied
+boatyard and forge give the island boats and tools. Longhouses rise through three needs tiers that add residents
+and rent and show on the house. Details: `docs/MILESTONE-4.md`.

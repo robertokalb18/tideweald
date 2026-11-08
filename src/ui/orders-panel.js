@@ -256,7 +256,7 @@ function OrdersPanel({ world: e, open: t, onOpen: a, onChange: n, tab: r, onTab:
                   children: [
                     'A leaf is filled the first time a living animal, a mature plant or a finished building exists on the island. Every ',
                     ORDER_LIMIT,
-                    ' leaves the cathedral school sends a purse, and a larger one for the complete folio.',
+                    ' leaves the lawspeaker at the Althing sends a purse, and a larger one for the complete folio.',
                   ],
                 }),
               ],

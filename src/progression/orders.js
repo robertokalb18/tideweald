@@ -340,7 +340,7 @@ function updateFolio(e) {
   return (
     announce(
       e,
-      `Folio: ${r.length > 1 ? `${r.length} new leaves, including ${m}` : `${m} recorded`} \xB7 ${s}/${n.size}${d ? ` \xB7 the cathedral school sends ${d} gold` : ''}.`,
+      `Folio: ${r.length > 1 ? `${r.length} new leaves, including ${m}` : `${m} recorded`} \xB7 ${s}/${n.size}${d ? ` \xB7 the lawspeaker at the Althing sends ${d} gold` : ''}.`,
     ),
     r
   );
