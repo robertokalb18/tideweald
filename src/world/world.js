@@ -33,6 +33,8 @@ function worldShell(e) {
     islandId: newIslandId(),
     terrainRevision: 0,
     frontier: createFrontier(),
+    // Milestone 6: a new campaign island is charted only around the haven (see world/fog.js).
+    sight: e === 'campaign' ? [[HAVEN.x, HAVEN.y, 34]] : void 0,
     revision: 0,
     autoCollect: !1,
     story: {

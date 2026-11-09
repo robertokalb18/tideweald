@@ -35,7 +35,8 @@ import { isBridge } from '../settlement/bridge-catalog.js';
 import { bridgeAt, bridgePlan, bridgeTiles } from '../settlement/bridges.js';
 import { animalPose, militaryActors, raidLocation } from '../world/actors.js';
 import { stepProgress } from '../core/step-clock.js';
-import { BUILDING_SIZES, CATALOG, GRID_H, Ia, clamp, isBuildingItem, isBuilt } from '../world/catalog.js';
+import { SITE_KINDS, exploredMap } from '../world/fog.js';
+import { BUILDING_SIZES, CATALOG, GRID_H, GRID_W, Ia, clamp, isBuildingItem, isBuilt } from '../world/catalog.js';
 import { seasonAt } from '../world/seasons.js';
 import { cellAt } from '../world/world.js';
 
@@ -794,7 +795,8 @@ function renderIsland(e, t, a, n, r, o, l, s, c, u, d = !1, m = 0, h = {}) {
     }
     e.restore();
   }
-  (drawOverlays(e, M, a, o, n, r, s, c, u, m, z, d, g, h),
+  (drawFog(e, M, a.zoom),
+    drawOverlays(e, M, a, o, n, r, s, c, u, m, z, d, g, h),
     e.restore(),
     drawAtmosphere(e, M, t, a, o, n, r, d, w, h.timeScale ?? 1),
     (t.weather === 'rain' || t.weather === 'storm' || t.weather === 'snow') &&
@@ -895,6 +897,72 @@ function drawStatusSign(e, t, a, n, r, o) {
           e.lineTo(4, -7),
           e.stroke()),
     e.restore());
+}
+// Milestone 6: uncharted land lies under blank chart paper, faint enough that mountains and coasts still show.
+// The paper image is one pixel per cell with a soft edge, rebuilt only when the charted land grows, and drawn
+// each frame over the map (so it is not part of any tile cache). Found discoveries get an ink mark and a name.
+function fogImage(e) {
+  let t = e.world,
+    a = exploredMap(t);
+  if (!a) return null;
+  let n = `${e.style}|${t.sight.length}`;
+  if (e.fog?.key === n) return e.fog.canvas;
+  let r = e.fog?.canvas ?? document.createElement('canvas');
+  ((r.width = GRID_W), (r.height = GRID_H));
+  let o = r.getContext('2d'),
+    l = o.createImageData(GRID_W, GRID_H),
+    s = new Uint8Array(GRID_W * GRID_H).fill(4),
+    c = [],
+    [u, d, m] = e.style === 'carta' ? [233, 220, 186] : [34, 70, 78];
+  for (let h = 0; h < a.length; h++) a[h] && ((s[h] = 0), c.push(h));
+  for (let h = 0; h < c.length; h++) {
+    let p = c[h],
+      g = p % GRID_W,
+      v = (p - g) / GRID_W;
+    if (s[p] >= 3) continue;
+    for (let [M, w] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      let y = g + M,
+        k = v + w;
+      if (y < 0 || k < 0 || y >= GRID_W || k >= GRID_H) continue;
+      let x = k * GRID_W + y;
+      s[x] > s[p] + 1 && ((s[x] = s[p] + 1), c.push(x));
+    }
+  }
+  for (let h = 0; h < s.length; h++)
+    ((l.data[h * 4] = u), (l.data[h * 4 + 1] = d), (l.data[h * 4 + 2] = m), (l.data[h * 4 + 3] = [0, 110, 180, 205, 214][s[h]]));
+  return (o.putImageData(l, 0, 0), (e.fog = { key: n, canvas: r }), r);
+}
+function drawFog(e, t, a) {
+  let n = fogImage(t);
+  if (!n) return;
+  let r = project(0, 0);
+  (e.save(),
+    e.transform(TILE_W / 2, TILE_H / 2, -TILE_W / 2, TILE_H / 2, r.x, r.y),
+    (e.imageSmoothingEnabled = !0),
+    e.drawImage(n, 0, 0),
+    e.restore());
+  let o = t.world.sites;
+  if (!o) return;
+  let l = 1 / Math.max(0.35, Math.min(1.5, a)),
+    s = t.style === 'carta' ? '#2b2118' : '#f5e5aa';
+  (e.save(), (e.textAlign = 'center'));
+  for (let c of o) {
+    if (!c.found) continue;
+    let u = project(c.x, c.y);
+    ((u.y -= cellAt(t.world, c.x, c.y)?.elevation ?? 0),
+      (e.strokeStyle = s),
+      (e.fillStyle = s),
+      (e.lineWidth = 1.6 * l),
+      e.beginPath(),
+      e.moveTo(u.x - 6 * l, u.y - 6 * l),
+      e.lineTo(u.x + 6 * l, u.y + 6 * l),
+      e.moveTo(u.x + 6 * l, u.y - 6 * l),
+      e.lineTo(u.x - 6 * l, u.y + 6 * l),
+      e.stroke(),
+      a > 0.3 &&
+        ((e.font = `italic 600 ${Math.round(11 * l)}px Georgia, serif`), e.fillText(SITE_KINDS[c.kind].name, u.x, u.y - 10 * l)));
+  }
+  e.restore();
 }
 // Milestone 4: when a chain workshop is selected, dotted lines run to the buildings that supply it.
 function drawSupplyLinks(e, t, a, n, r, o) {

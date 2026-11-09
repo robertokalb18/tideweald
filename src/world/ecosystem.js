@@ -2,6 +2,7 @@
 import { collectGoods, production } from '../economy/production.js';
 import { WORKSHOPS } from '../economy/workshops.js';
 import { stepFrontier } from '../military/frontier.js';
+import { SITE_KINDS, revealStep, siteReward } from './fog.js';
 import { charterRate, constructionRate, hasLandmark, updateCampaign } from '../progression/campaign.js';
 import { councilEffects } from '../progression/council.js';
 import { bridgeDays, bridgeTiles } from '../settlement/bridges.js';
@@ -388,7 +389,15 @@ function step(e, t) {
       `${b.length === 1 ? `A ${A[0]}` : `${b.length} animals (${A.slice(0, 3).join(', ')})`} could not survive near Day ${Math.floor(e.time) + 1}. Check its habitat for food, water and tainted ground.`,
     );
   }
-  ((e.animals = R), stepFrontier(e, t), Bp.delete(e));
+  ((e.animals = R),
+    stepFrontier(e, t),
+    revealStep(e, (s) => {
+      let k = SITE_KINDS[s.kind];
+      (e.story.events.push({ day: Math.floor(e.time + 1e-8) + 1, title: `Discovered: ${k.name}`, text: `${k.text} ${siteReward(s.kind)}.` }),
+        e.story.events.length > 60 && e.story.events.shift(),
+        announce(e, `Discovered: ${k.name}. ${siteReward(s.kind)}.`));
+    }),
+    Bp.delete(e));
 }
 function isWater(e) {
   return !!e && (!e.land || e.pond);

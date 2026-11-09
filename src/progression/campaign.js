@@ -25,6 +25,7 @@ import { seasonAt, seasonalWeather } from '../world/seasons.js';
 import { Qd, is } from '../world/spatial-index.js';
 import { df } from '../world/wildlife.js';
 import { announce, cellAt, nearby } from '../world/world.js';
+import { isExplored } from '../world/fog.js';
 
 var CHAPTERS = [
     {
@@ -440,6 +441,8 @@ function placementPreview(e, t, a, n, r = 0) {
     s = o?.cost ?? 0,
     c = (m) => ({ ok: !1, cost: s, reason: m });
   if (!o || !l || !Number.isFinite(a) || !Number.isFinite(n)) return c('Choose a tile inside the map');
+  if (!isExplored(e, a, n))
+    return c('Uncharted land. Build nearer the settlement, lay roads outward, or raise a watchtower to see further.');
   if (isBridge(t)) return bridgePlan(e, t, a, n, r);
   if (t === 'remove_bridge')
     return {

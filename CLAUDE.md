@@ -23,4 +23,6 @@ New rules from Milestone 1:
 - Milestone 5 (pacing, finale, free-build rules) is in v16.16 (`docs/MILESTONE-5.md`). The campaign test compares
   chapters with v16.11 minus the removed day floor; any other change to chapter mechanics must be deliberate
   and named in that test the same way, never by regenerating the fixture.
-- Next: the optional Milestones 6 (technologies, fog and discoveries) and 7 (boats, trade, a rival island).
+- Milestone 6, fog and discoveries, is in v16.17 (`docs/MILESTONE-6.md`); fog exists only on islands with
+  `world.sight` (new campaigns). Technologies and Milestone 7 (boats, trade, a rival island) are not built;
+  start them only after the playtest notes for Milestones 2–5.

@@ -10,7 +10,7 @@ It plays exactly like v16.11 apart from the Milestone 1 changes listed below, an
 
 ```sh
 npm install
-npm test             # 30 Node tests: saves, campaign data, simulation, decor, raids, economy, pacing
+npm test             # 33 Node tests: saves, campaign data, simulation, decor, raids, economy, pacing, fog
 npm run build        # writes dist/
 npm run serve        # http://localhost:8080
 npm run test:browser # with the server running: browser smoke test
@@ -77,3 +77,8 @@ and rent and show on the house. Details: `docs/MILESTONE-4.md`.
 Chapters end as soon as their goals are met (no 3-day floor). Chapter 48 ends with the covenant finale and a
 choice to keep taking commissions or carry the island into free build, which now has its own rules for threats
 and upkeep. Details: `docs/MILESTONE-5.md`.
+
+## Milestone 6 changes (v16.17): fog and discoveries
+
+New campaign islands start charted only around the haven; buildings, roads and towers chart the rest, and twelve
+discoveries reward exploring. Technologies and Milestone 7 are not built yet. Details: `docs/MILESTONE-6.md`.

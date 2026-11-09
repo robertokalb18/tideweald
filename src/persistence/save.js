@@ -205,6 +205,20 @@ var SaveSchema = z.object({
     .max(128)
     .optional(),
   terrainRevision: xe.optional(),
+  // Milestone 6: charted land (circles: x, y, radius) and the discovery sites. Absent = no fog.
+  sight: z.array(z.tuple([$7, V7, z.number().finite().min(0).max(64)])).max(4000).optional(),
+  sites: z
+    .array(
+      z.object({
+        id: xe,
+        kind: z.enum(['hoard', 'shieling', 'cove', 'bogiron', 'runestone', 'driftwood']),
+        x: $7,
+        y: V7,
+        found: z.boolean(),
+      }),
+    )
+    .max(32)
+    .optional(),
   frontier: _C,
   revision: xe,
   autoCollect: z.boolean(),
