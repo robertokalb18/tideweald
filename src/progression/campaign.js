@@ -26,6 +26,7 @@ import { Qd, is } from '../world/spatial-index.js';
 import { df } from '../world/wildlife.js';
 import { announce, cellAt, nearby } from '../world/world.js';
 import { isExplored } from '../world/fog.js';
+import { knows } from './lore.js';
 
 var CHAPTERS = [
     {
@@ -285,8 +286,8 @@ function completeChapter(e) {
     return !1;
   let a = currentChapter(e);
   return (
-    (e.wallet.gold += a.reward),
-    (e.earned += a.reward),
+    (e.wallet.gold += a.reward * (knows(e, 'runes') ? 1.1 : 1)),
+    (e.earned += a.reward * (knows(e, 'runes') ? 1.1 : 1)),
     t.completed.push(t.chapter),
     (t.population = Math.max(t.population, a.settlers ?? 0)),
     t.chapter++,

@@ -46,7 +46,7 @@ function drawStatic(e, t, a, n) {
     : a.kind === 'plant'
       ? drawPlant(e, a.value, t.images, t.world, n, t.season, t.wet, a)
       : a.kind === 'building'
-        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal, a.yard, t.season, a.tier)
+        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal, a.yard, t.season, a.tier, a.craft)
         : a.kind === 'feature'
           ? drawFeature(e, a.value, t.images, n)
           : drawObject(e, a.value);
@@ -603,6 +603,7 @@ function renderIsland(e, t, a, n, r, o, l, s, c, u, d = !1, m = 0, h = {}) {
         }
     (e.stroke(), (p.animating = p.animating || !d));
   }
+  drawFleet(e, t, o, l, d);
   let j = raidLocation(t);
   if (j?.spotted) {
     let P = project(j.water.x, j.water.y);
@@ -897,6 +898,49 @@ function drawStatusSign(e, t, a, n, r, o) {
           e.lineTo(4, -7),
           e.stroke()),
     e.restore());
+}
+// Milestone 7: knarrs leaving on and coming home from trade voyages, and longships sailing against the jarl,
+// are drawn for the first and last half day of each trip, moving out from (or in to) their harbor or yard.
+var fleetWater = new WeakMap();
+function shoreWater(e, t) {
+  let a = fleetWater.get(e);
+  a || fleetWater.set(e, (a = new Map()));
+  let n = `${t.id}|${e.terrainRevision ?? 0}`;
+  if (a.has(n)) return a.get(n);
+  let r = null,
+    o = 1e9;
+  for (let l = -7; l <= 7; l++)
+    for (let s = -7; s <= 7; s++) {
+      let c = cellAt(e, t.x + s, t.y + l);
+      if (!c || c.land) continue;
+      let u = s * s + l * l;
+      u < o && ((o = u), (r = { x: c.x + 0.5, y: c.y + 0.5, dx: s, dy: l }));
+    }
+  return (a.set(n, r), r);
+}
+function drawFleet(e, t, a, n, r) {
+  let o = t,
+    l = o.time,
+    s = [];
+  for (let c of o.story.voyages ?? []) s.push([c.depart, c.back, 'harbor', 'hue-rotate(170deg) saturate(.55)']);
+  let c = o.frontier.rival?.expedition;
+  c && s.push([c.back - 6, c.back, 'shipyard', 'hue-rotate(200deg) saturate(.8)']);
+  for (let [u, d, m, h] of s) {
+    let p = l + 1 - u,
+      g = d - (l + 1),
+      v = p < 0.6 ? p / 0.6 : g < 0.6 ? g / 0.6 : -1;
+    if (v < 0 || v > 1) continue;
+    let M = o.buildings.find((I) => I.kind === m && isBuilt(I)),
+      w = M && shoreWater(o, M);
+    if (!w) continue;
+    let y = Math.hypot(w.dx, w.dy) || 1,
+      k = project(w.x + (w.dx / y) * v * 9, w.y + (w.dy / y) * v * 9);
+    (e.save(),
+      (e.globalAlpha = Math.min(1, (1 - v) * 3)),
+      r || (e.filter = h),
+      sprite(e, n.norse, 4, k.x, k.y + (r ? 0 : Math.sin(a * 0.002) * 1.2), 90, 1, w.dx < 0 ? -1 : 1, 'norse'),
+      e.restore());
+  }
 }
 // Milestone 6: uncharted land lies under blank chart paper, faint enough that mountains and coasts still show.
 // The paper image is one pixel per cell with a soft edge, rebuilt only when the charted land grows, and drawn

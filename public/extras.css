@@ -1,0 +1,67 @@
+/* Styles for the panels added in Milestones 6 and 7 (Lore, Voyages, the Red Sail jarl). Loaded after app.css. */
+.lore-panel .lore-tier h4 {
+  margin: 14px 0 6px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.trade-row.lore-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.trade-row.lore-row > div:first-child span {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.35;
+  opacity: 0.82;
+  margin-top: 2px;
+}
+.trade-row.lore-row.is-learned {
+  opacity: 0.6;
+}
+.trade-row.lore-row .trade-buttons button {
+  min-width: 96px;
+  white-space: normal;
+}
+.voyage-out {
+  font-weight: 600;
+  margin: 4px 0;
+}
+.jarl-panel {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(184, 69, 47, 0.08);
+  border: 1px solid rgba(184, 69, 47, 0.25);
+}
+.jarl-panel h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+.jarl-panel p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.jarl-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.jarl-actions button {
+  flex: 1 1 140px;
+}
+.finale-stats li {
+  display: flex;
+  justify-content: space-between;
+}
+.sandbox-rules h3 {
+  font-size: 13px;
+  margin: 12px 0 4px;
+}
+.sandbox-rules .setting-row small {
+  display: block;
+  opacity: 0.75;
+}

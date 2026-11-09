@@ -118,6 +118,15 @@ var gt = z.number().finite().min(0).max(1e12),
         })
         .optional(),
       battle: BATTLE.optional(),
+      // Milestone 7: the Red Sail jarl.
+      rival: z
+        .object({
+          strength: xe.max(1e4),
+          peaceUntil: xe,
+          lastMove: xe,
+          expedition: z.object({ back: xe, sent: xe.max(18), power: xe }).optional(),
+        })
+        .optional(),
       lastReport: z
         .object({
           day: xe,
@@ -316,6 +325,14 @@ var SaveSchema = z.object({
     ledgerDay: xe.optional(),
     // Milestone 5: free-build rules, and the record kept when the campaign's last chapter is done.
     rules: z.object({ threats: z.boolean(), upkeep: z.boolean() }).optional(),
+    voyages: z
+      .array(z.object({ route: z.enum(['iceland', 'greenland', 'norway', 'dublin']), depart: xe, back: xe }))
+      .max(16)
+      .optional(),
+    lore: z
+      .array(z.enum(['ard', 'clinker', 'turf', 'bows', 'smoke', 'shieldwall', 'ditch', 'millstone', 'wool', 'runes', 'sunstone', 'knarr']))
+      .max(12)
+      .optional(),
     finale: z
       .object({
         day: xe,

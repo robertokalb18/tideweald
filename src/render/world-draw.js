@@ -8,6 +8,7 @@ import { plantLook, preparedPlant, preparedSprite, spriteRect } from './sprites.
 import { contourRings, meadowPattern, texturePattern } from './textures.js';
 import { kc } from './tile-cache.js';
 import { houseNeeds } from '../economy/needs.js';
+import { knows } from '../progression/lore.js';
 import { bridgeAt, bridgeTiles } from '../settlement/bridges.js';
 import { BUILDING_SIZES, CATALOG, GRID_H, GRID_W, clamp, isBuilt } from '../world/catalog.js';
 import { cellAt } from '../world/world.js';
@@ -221,12 +222,57 @@ function drawTierFront(e, t, a, n) {
         e.fill());
     }
 }
-function drawBuildingStatic(e, t, a, n, r, o, yard = !1, season = 0, houseTier = 0) {
+function drawCraft(e, t, a, n, r) {
+  let o = n === PALETTES.carta;
+  if ((e.save(), a & 1)) {
+    // Furrows from the iron-shod ard, on the strip in front of the farm.
+    ((e.strokeStyle = o ? 'rgba(92,64,36,.55)' : 'rgba(110,74,38,.55)'), (e.lineWidth = 1.2), e.beginPath());
+    for (let l = 0; l < 6; l++) {
+      let s = t.x - 46 + l * 7,
+        c = t.y + 14 + l * 3.5;
+      (e.moveTo(s, c), e.lineTo(s + 26, c + 13));
+    }
+    e.stroke();
+  }
+  if (a & 2)
+    ((e.strokeStyle = o ? 'rgba(60,48,34,.6)' : 'rgba(40,30,20,.55)'),
+      (e.lineWidth = 3),
+      e.beginPath(),
+      e.ellipse(t.x, t.y + 4, 52, 26, 0, Math.PI * 0.05, Math.PI * 0.95),
+      e.stroke(),
+      (e.strokeStyle = o ? 'rgba(157,189,176,.7)' : 'rgba(35,127,140,.6)'),
+      (e.lineWidth = 1.2),
+      e.stroke());
+  if (a & 4) {
+    // Homespun drying on a frame at the back of the yard.
+    let l = t.x + 20,
+      s = t.y - 8;
+    ((e.strokeStyle = o ? '#4a3420' : '#5a3d22'),
+      (e.lineWidth = 1.2),
+      e.beginPath(),
+      e.moveTo(l, s),
+      e.lineTo(l, s - 14),
+      e.moveTo(l + 16, s + 4),
+      e.lineTo(l + 16, s - 10),
+      e.stroke(),
+      (e.fillStyle = r === 3 ? '#d9dce0' : ['#3f6a9a', '#b8452f', '#c89b3c'][Math.abs(t.x | 0) % 3]),
+      e.beginPath(),
+      e.moveTo(l, s - 13),
+      e.lineTo(l + 16, s - 9),
+      e.lineTo(l + 16, s - 3),
+      e.lineTo(l, s - 7),
+      e.closePath(),
+      e.fill());
+  }
+  e.restore();
+}
+function drawBuildingStatic(e, t, a, n, r, o, yard = !1, season = 0, houseTier = 0, craft = 0) {
   let l = project(t.x, t.y);
   l.y -= cellAt(n, t.x, t.y)?.elevation ?? 0;
   let s = (BUILDING_SIZES[t.kind]?.size ?? 132) * (houseTier >= 3 ? 1.08 : 1);
   if (isBuilt(t)) {
     yard && drawYard(e, t, l, o, season);
+    craft && drawCraft(e, l, craft, o, season);
     houseTier && drawTierBack(e, l, o, houseTier);
     let c = buildingSprite(t);
     (sprite(e, a[c.atlas], c.index, l.x, l.y + s * 0.15, s, 1, t.orientation ? -1 : 1, c.atlas, tier(s * r)),
@@ -445,15 +491,22 @@ function staticsFor(e, t) {
         s * 4 + (r.orientation ?? 0),
       );
     let yard = yards.has(r.id),
-      tier = r.kind === 'cottage' ? houseNeeds(e, r).tier : 0;
+      tier = r.kind === 'cottage' ? houseNeeds(e, r).tier : 0,
+      // Lore that shows on the map (Milestone 6): furrows, the gate ditch, cloth frames.
+      craft =
+        (r.kind === 'farm' && knows(e, 'ard') ? 1 : 0) |
+        (r.kind === 'palisade' && knows(e, 'ditch') ? 2 : 0) |
+        (r.kind === 'cottage' && yard && knows(e, 'wool') ? 4 : 0);
     ((c = mix(mix(c, Math.round(o.x * 2)), Math.round(o.y * 2))),
       yard && (c = mix(c, 7001 + t)),
       tier > 1 && (c = mix(c, 7100 + tier)),
+      craft && (c = mix(c, 7200 + craft)),
       a.push({
         kind: 'building',
         value: r,
         yard,
         tier,
+        craft,
         depth: r.x + r.y,
         order: n++,
         x0: o.x - l * 0.56,

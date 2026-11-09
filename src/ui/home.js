@@ -53,6 +53,8 @@ import {
   setDiaryEnabled,
 } from './diary.js';
 import { FrontierPanel, settlementLedger } from './frontier-panel.js';
+import { LorePanel } from './lore-panel.js';
+import { VoyagesPanel } from './voyages-panel.js';
 import {
   $0,
   $4,
@@ -2774,6 +2776,8 @@ function Home() {
                   children: [
                     (0, jsxRuntime.jsx)(TabsTrigger, { value: 'trade', children: 'Trade goods' }),
                     (0, jsxRuntime.jsx)(TabsTrigger, { value: 'ledger', children: 'Daily ledger' }),
+                    (0, jsxRuntime.jsx)(TabsTrigger, { value: 'lore', children: 'Lore' }),
+                    (0, jsxRuntime.jsx)(TabsTrigger, { value: 'voyages', children: 'Voyages' }),
                   ],
                 }),
                 (0, jsxRuntime.jsxs)(TabsContent, {
@@ -2883,6 +2887,24 @@ function Home() {
                         'Farms, fisheries and fruit trees produce food. Selling a lot at once lowers the price for a few days.',
                     }),
                   ],
+                }),
+                (0, jsxRuntime.jsx)(TabsContent, {
+                  value: 'voyages',
+                  children: (0, jsxRuntime.jsx)(VoyagesPanel, {
+                    world: t.current,
+                    onChange: (S) => {
+                      (Nt.coin(), diaryLog('voyage', t.current, S.id), ze(), he.save(!0));
+                    },
+                  }),
+                }),
+                (0, jsxRuntime.jsx)(TabsContent, {
+                  value: 'lore',
+                  children: (0, jsxRuntime.jsx)(LorePanel, {
+                    world: t.current,
+                    onChange: (S) => {
+                      (Nt.coin(), diaryLog('lore', t.current, S.id), ze(), he.save(!0));
+                    },
+                  }),
                 }),
                 (0, jsxRuntime.jsx)(TabsContent, {
                   value: 'ledger',

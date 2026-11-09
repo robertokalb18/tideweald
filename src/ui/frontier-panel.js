@@ -26,6 +26,8 @@ import { I0, Nd, Rd, Sd, Td, U4, W0, Yn, Z4, dp } from './icons.js';
 import { Dialog, DialogDescription, DialogTitle, IslandDialogContent } from './kit.js';
 import { CATALOG, isBuilt } from '../world/catalog.js';
 import { raidLocation } from '../world/actors.js';
+import { RIVAL, atPeace, expeditionStatus, payTribute, sendLongships, tributeCost } from '../military/rival.js';
+import { knows } from '../progression/lore.js';
 import { SEASON_NAMES, seasonAt } from '../world/seasons.js';
 import { is } from '../world/spatial-index.js';
 
@@ -132,6 +134,51 @@ var FORMATION_NOTES = {
             : `they get away with ${Math.round(e.lost * 100)}% of the ${t}\u2019s goods.`) +
         (e.guardsDown ? ` About ${e.guardsDown} guard${e.guardsDown === 1 ? '' : 's'} would be cut down.` : '')
       : '';
+// Milestone 7: the Red Sail jarl. Tribute buys peace; longships (Knarr building and a boatbuilders' yard)
+// take half the guards away for six days to strike his island.
+function jarlSection(e, t, a) {
+  let n = t.rival,
+    r = Math.floor(e.time + 1e-8) + 1,
+    o = e.buildings.some((s) => s.kind === 'shipyard' && isBuilt(s)),
+    l = expeditionStatus(e, knows(e, 'knarr'), o, knows(e, 'shieldwall'));
+  return (0, jsxRuntime.jsxs)('section', {
+    className: 'jarl-panel',
+    children: [
+      (0, jsxRuntime.jsx)('h3', { children: 'The Red Sail jarl' }),
+      (0, jsxRuntime.jsx)('p', {
+        children: [
+          `Strength ${n.strength}: his raids are ${Math.round(Math.max(0.85, Math.min(1.3, 0.85 + n.strength / 200)) * 100)}% as hard as an ordinary band. `,
+          atPeace(e)
+            ? `At peace until Day ${n.peaceUntil}: no raids, though storms still come.`
+            : `He gathers more ships every ${RIVAL.every} days.`,
+          n.expedition ? ` Your longships are at sea with ${n.expedition.sent} guards, home on Day ${n.expedition.back}.` : '',
+        ].join(''),
+      }),
+      (0, jsxRuntime.jsxs)('div', {
+        className: 'trade-buttons jarl-actions',
+        children: [
+          (0, jsxRuntime.jsxs)('button', {
+            disabled: atPeace(e) || e.wallet.gold < tributeCost(e),
+            onClick: () => {
+              payTribute(e).ok && a?.();
+            },
+            children: ['Pay tribute', (0, jsxRuntime.jsx)('small', { children: `${tributeCost(e)} gold \xB7 ${RIVAL.peaceDays} days of peace` })],
+          }),
+          (0, jsxRuntime.jsxs)('button', {
+            disabled: !l.ok,
+            onClick: () => {
+              sendLongships(e, knows(e, 'knarr'), o, knows(e, 'shieldwall')).ok && a?.();
+            },
+            children: [
+              'Send longships',
+              (0, jsxRuntime.jsx)('small', { children: l.ok ? `${l.reason} \xB7 ${l.odds}` : l.reason }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
 var mT = [Sd, Nd, W0, Rd],
   resourceText = (e) =>
     Object.entries(e)
@@ -312,6 +359,7 @@ function FrontierPanel({
                 FORMATION_NOTES[c.formation ?? 'patrol'] +
                 (e.frontier.battle ? ' You can change formation during the fight.' : ''),
             }),
+            c.rival && jarlSection(e, c, n),
             (0, jsxRuntime.jsxs)('details', {
               className: 'army-details',
               children: [

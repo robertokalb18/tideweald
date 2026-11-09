@@ -10,7 +10,7 @@ It plays exactly like v16.11 apart from the Milestone 1 changes listed below, an
 
 ```sh
 npm install
-npm test             # 33 Node tests: saves, campaign data, simulation, decor, raids, economy, pacing, fog
+npm test             # 37 Node tests: saves, campaign data, simulation, decor, raids, economy, pacing, fog, lore and trade
 npm run build        # writes dist/
 npm run serve        # http://localhost:8080
 npm run test:browser # with the server running: browser smoke test
@@ -82,3 +82,8 @@ and upkeep. Details: `docs/MILESTONE-5.md`.
 
 New campaign islands start charted only around the haven; buildings, roads and towers chart the rest, and twelve
 discoveries reward exploring. Technologies and Milestone 7 are not built yet. Details: `docs/MILESTONE-6.md`.
+
+## v16.18: lore, voyages and the Red Sail jarl
+
+Twelve crafts to learn (Market → Lore), trade voyages by knarr (Market → Voyages), and a rival jarl whose
+strength scales the raids, answered with tribute or longships (Army). Details: `docs/MILESTONE-7.md`.

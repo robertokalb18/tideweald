@@ -2,6 +2,7 @@
 import { WORKSHOPS } from './workshops.js';
 import { CHAINS, GOODS, SUPPLY_RANGE, goodsBonus, islandGoods, supplyOf } from './chains.js';
 import { TIERS, houseNeeds, houseRent, houseResidents, nextNeed } from './needs.js';
+import { knows } from '../progression/lore.js';
 import { DEFENSE_ITEMS, moraleMultiplier } from '../military/frontier.js';
 import { buildingResource, charterRate, hasLandmark, tradeMultiplier } from '../progression/campaign.js';
 import { councilEffects } from '../progression/council.js';
@@ -190,7 +191,7 @@ function production(e, t, a = !1) {
   let chain = CHAINS[t.kind] ? supplyOf(e, t) : null,
     goods = goodsBonus(e, t.kind);
   if (c > 0 && chain) {
-    c *= chain.factor;
+    c *= chain.factor * (chain.milled && knows(e, 'millstone') ? 1.5 / 1.3 : 1);
     d === 'Working' &&
       (d = chain.missing
         ? `Half rate \xB7 no ${chain.missing} supplier within ${SUPPLY_RANGE} tiles`
@@ -198,6 +199,12 @@ function production(e, t, a = !1) {
           ? 'Working \xB7 flour from the mill +30%'
           : `Working \xB7 supplied with ${CHAINS[t.kind].goods}`);
   }
+  // Lore (Milestone 6): crafts that raise output.
+  let craft =
+    (t.kind === 'farm' && knows(e, 'ard') ? 1.15 : 1) *
+    ((t.kind === 'fishery' || t.kind === 'pier') && knows(e, 'clinker') ? 1.15 : 1);
+  c > 0 && (c *= craft);
+  t.kind === 'cottage' && c > 0 && knows(e, 'wool') && (c += 0.3);
   if (c > 0 && goods > 1) {
     c *= goods;
     d === 'Working' &&

@@ -164,10 +164,12 @@ const routePoint = (route, i) => ({ x: route[i * 2] + 0.5, y: route[i * 2 + 1] +
 const routeLength = (route) => route.length / 2;
 
 /** Counts of defenses in play, from the island's completed buildings. */
-function defenses(w) {
+// Lore (Milestone 6) arrives through opts.lore: { shieldwall, bows, ditch }, worked out by the frontier rules.
+function defenses(w, opts = {}) {
   const towers = [],
     palisades = [],
     halls = [];
+  palisades.r = PALISADE.radius + (opts.lore?.ditch ? 1.5 : 0);
   for (const b of w.buildings) {
     if (!built(b)) continue;
     if (TOWERS[b.kind]) towers.push(b);
@@ -176,7 +178,7 @@ function defenses(w) {
   }
   return { towers, palisades, halls };
 }
-const nearPalisade = (pals, p) => pals.some((q) => dist(q, p) <= PALISADE.radius);
+const nearPalisade = (pals, p) => pals.some((q) => dist(q, p) <= (pals.r ?? PALISADE.radius));
 
 /**
  * The band lands. `plan` comes from planRaid; `opts.structure` scales tower fire and gates
@@ -185,7 +187,7 @@ const nearPalisade = (pals, p) => pals.some((q) => dist(q, p) <= PALISADE.radius
 export function startBattle(w, threat, plan, opts = {}) {
   const S = Math.max(1, threat.strength),
     n = Math.max(3, Math.min(14, Math.round(S / 3))),
-    { palisades, halls } = defenses(w),
+    { palisades, halls } = defenses(w, opts),
     land = { x: plan.landing[0] + 0.5, y: plan.landing[1] + 0.5 },
     target = { x: plan.tx, y: plan.ty },
     raiders = [],
@@ -231,7 +233,10 @@ export function startBattle(w, threat, plan, opts = {}) {
     raiders,
     guards,
     gate: protectedTarget
-      ? PALISADE.gate * palisades.filter((q) => dist(q, target) <= PALISADE.radius).length * (opts.structure ?? 1)
+      ? PALISADE.gate *
+        palisades.filter((q) => dist(q, target) <= palisades.r).length *
+        (opts.structure ?? 1) *
+        (opts.lore?.ditch ? 1.5 : 1)
       : 0,
     gateMax: 0,
     lootTime: 0,
@@ -363,7 +368,7 @@ export function stepBattle(w, b, dt, opts = {}) {
   for (const u of b.guards) (u.px = u.x), (u.py = u.y);
   b.shots = [];
   const sub = dt / SUBSTEPS,
-    def = defenses(w);
+    def = defenses(w, opts);
   for (let k = 0; k < SUBSTEPS; k++) if (subStep(w, b, sub, opts, k === 0, def)) return true;
   return false;
 }
@@ -459,7 +464,11 @@ function subStep(w, b, dt, opts, record, def) {
         onG.set(foe, (onG.get(foe) ?? 0) + 1);
         u.s = 'fight';
         const shield = nearPalisade(palisades, foe) ? PALISADE.taken : 1;
-        hit(dmgG, foe, ((u.max * RAIDER.dpsPer) / RAIDER.hpPer) * vigor(u) * form.taken * shield * dt);
+        hit(
+          dmgG,
+          foe,
+          ((u.max * RAIDER.dpsPer) / RAIDER.hpPer) * vigor(u) * form.taken * shield * (opts.lore?.shieldwall ? 0.85 : 1) * dt,
+        );
         return;
       }
     }
@@ -482,9 +491,9 @@ function subStep(w, b, dt, opts, record, def) {
   // Towers and beacons loose arrows at the nearest raider ashore.
   for (const t of towers) {
     const spec = TOWERS[t.kind],
-      foe = nearest(R, t, spec.range, ashore);
+      foe = nearest(R, t, spec.range + (opts.lore?.bows ? 1 : 0), ashore);
     if (!foe) continue;
-    hit(dmgR, foe, spec.dps * structure * dt);
+    hit(dmgR, foe, spec.dps * structure * (opts.lore?.bows ? 1.3 : 1) * dt);
     if (record && b.shots.length < 8) b.shots.push([t.x, t.y, foe.x, foe.y]), b.arrows++;
   }
 

@@ -3,6 +3,8 @@ import { WORKSHOPS } from '../economy/workshops.js';
 import { councilEffects } from '../progression/council.js';
 import { seasonAt } from '../world/seasons.js';
 import { battleOutcome, forecastBattle, planRaid, startBattle, stepBattle } from './battle.js';
+import { knows, loreSignature } from '../progression/lore.js';
+import { atPeace, rivalFactor, stepRival } from './rival.js';
 
 var DEFENSE_ITEMS = [
     {
@@ -85,7 +87,9 @@ var DEFENSE_ITEMS = [
   foodCapacity = (e) => 1e3 + completed(e, 'granary') * 1500 + completed(e, 'storehouse') * 800,
   foodSpoilage = (e) =>
     upkeepOn(e)
-      ? Math.floor(Math.max(0, e.wallet.food - foodCapacity(e)) * 0.2 * councilEffects(e).spoilage)
+      ? Math.floor(
+          Math.max(0, e.wallet.food - foodCapacity(e)) * 0.2 * councilEffects(e).spoilage * (knows(e, 'smoke') ? 0.5 : 1),
+        )
       : 0;
 function dailyNeeds(e) {
   if (!upkeepOn(e)) return empty();
@@ -97,7 +101,9 @@ function dailyNeeds(e) {
   return {
     gold: a + Math.floor(r.length / 2) + o,
     food: Math.ceil((t * 0.45 + a * 0.75) * n.foodUpkeep) + foodSpoilage(e),
-    timber: (seasonAt(e.time).index === 3 ? Math.ceil((t / 8) * n.winterFuel) : 0) + Math.floor(r.length / 4),
+    timber:
+      (seasonAt(e.time).index === 3 ? Math.ceil((t / 8) * n.winterFuel * (knows(e, 'turf') ? 0.6 : 1)) : 0) +
+      Math.floor(r.length / 4),
     stone: 0,
   };
 }
@@ -139,7 +145,11 @@ function raidStrength(e, t) {
 }
 // Raids are fought on the map (battle.js). Everything below is how the frontier rules start a
 // battle, forecast it for the Army panel, and settle it.
-var battleOpts = (e) => ({ structure: councilEffects(e).structureDefense, morale: e.frontier.morale }),
+var battleOpts = (e) => ({
+    structure: councilEffects(e).structureDefense,
+    morale: e.frontier.morale,
+    lore: { shieldwall: knows(e, 'shieldwall'), bows: knows(e, 'bows'), ditch: knows(e, 'ditch') },
+  }),
   peekPlans = new WeakMap();
 /** The raid's landing, target and route: saved on the threat, or worked out (and not saved) for a peek. */
 function raidPlan(e, t, save = !1) {
@@ -160,6 +170,7 @@ function raidForecast(e, t) {
       e.buildings.reduce((o, l) => o + (l.buildProgress >= 1 - 1e-8 ? 1 : 0), 0),
       Math.round(a.morale / 5),
       councilEffects(e).structureDefense,
+      loreSignature(e),
       a.battle ? Math.floor(a.battle.t * 10) : -1,
     ].join('|'),
     r = forecasts.get(e);
@@ -446,18 +457,21 @@ function stepFrontier(e, dt = 0.025) {
         seasonAt(e.time).day === 1 &&
         (t.winters++, log(e, 'Spring returns', 'Another winter behind us. The covenant has held.')));
   }
+  // Milestone 7: the Red Sail jarl moves on his own schedule once threats are on.
+  threatsOn(e) && stepRival(e, (r, o) => log(e, r, o));
   if (t.pending?.kind === 'raid') {
     // A raid sighted before v16.13 has no landing yet: decide it now, inside the step.
     (t.pending.route || raidPlan(e, t.pending, !0),
       !t.battle && a >= t.pending.dueDay && landRaid(e, t.pending, a),
       t.battle && stepBattle(e, t.battle, dt, battleOpts(e)) && resolveRaid(e, t.pending, t.battle));
   } else t.pending && a >= t.pending.dueDay && resolveThreat(e, t.pending);
-  let n = completed(e, 'watchtower') || completed(e, 'beacon') ? 4 : 3;
+  let n = (completed(e, 'watchtower') || completed(e, 'beacon') ? 4 : 3) + (knows(e, 'sunstone') ? 1 : 0);
   if (!t.pending && threatsOn(e) && a >= t.nextEventDay - n) {
     let r = t.eventNumber++,
       o = seasonAt(t.nextEventDay - 1).index,
       l = t.scripted,
-      s = l || r % 2 === 1 ? 'raid' : ['flood', 'wildfire', 'gale', 'blizzard'][o],
+      s =
+        l || (r % 2 === 1 && !atPeace(e)) ? 'raid' : ['flood', 'wildfire', 'gale', 'blizzard'][o],
       c =
         l?.title ??
         {
@@ -471,7 +485,7 @@ function stepFrontier(e, dt = 0.025) {
       id: r + 1,
       kind: s,
       dueDay: Math.max(a + n, t.nextEventDay),
-      strength: Math.round(raidStrength(e, r) * (l?.factor ?? 1)),
+      strength: Math.round(raidStrength(e, r) * (l?.factor ?? 1) * rivalFactor(e)),
       title: c,
     }),
       s === 'raid' && raidPlan(e, t.pending, !0),

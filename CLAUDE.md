@@ -24,5 +24,8 @@ New rules from Milestone 1:
   chapters with v16.11 minus the removed day floor; any other change to chapter mechanics must be deliberate
   and named in that test the same way, never by regenerating the fixture.
 - Milestone 6, fog and discoveries, is in v16.17 (`docs/MILESTONE-6.md`); fog exists only on islands with
-  `world.sight` (new campaigns). Technologies and Milestone 7 (boats, trade, a rival island) are not built;
-  start them only after the playtest notes for Milestones 2–5.
+  `world.sight` (new campaigns).
+- On 9 November 2026 the owner asked for the whole audit to be finished before playtesting, so technologies and
+  Milestone 7 are built ahead of the playtest gates. Tune them from the playtest notes.
+- Lore (`progression/lore.js`), voyages (`economy/voyages.js`) and the jarl (`military/rival.js`) are in v16.18
+  (`docs/MILESTONE-7.md`). `lore.js` and `rival.js` import nothing; keep them leaves.

@@ -3,6 +3,7 @@ import { collectGoods, production } from '../economy/production.js';
 import { WORKSHOPS } from '../economy/workshops.js';
 import { stepFrontier } from '../military/frontier.js';
 import { SITE_KINDS, revealStep, siteReward } from './fog.js';
+import { stepVoyages } from '../economy/voyages.js';
 import { charterRate, constructionRate, hasLandmark, updateCampaign } from '../progression/campaign.js';
 import { councilEffects } from '../progression/council.js';
 import { bridgeDays, bridgeTiles } from '../settlement/bridges.js';
@@ -391,6 +392,11 @@ function step(e, t) {
   }
   ((e.animals = R),
     stepFrontier(e, t),
+    stepVoyages(e, (s, k) => {
+      (e.story.events.push({ day: Math.floor(e.time + 1e-8) + 1, title: s, text: k }),
+        e.story.events.length > 60 && e.story.events.shift(),
+        announce(e, `${s}. ${k}`));
+    }),
     revealStep(e, (s) => {
       let k = SITE_KINDS[s.kind];
       (e.story.events.push({ day: Math.floor(e.time + 1e-8) + 1, title: `Discovered: ${k.name}`, text: `${k.text} ${siteReward(s.kind)}.` }),
