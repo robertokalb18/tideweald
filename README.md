@@ -10,7 +10,8 @@ It plays exactly like v16.11 apart from the Milestone 1 changes listed below, an
 
 ```sh
 npm install
-npm test             # 37 Node tests: saves, campaign data, simulation, decor, raids, economy, pacing, fog, lore and trade
+npm test             # 37 Node tests plus the 9 ported v14 suites (93 pass, 2 skipped)
+npm run typecheck    # type-checks the modules written since the rebuild
 npm run build        # writes dist/
 npm run serve        # http://localhost:8080
 npm run test:browser # with the server running: browser smoke test
@@ -36,7 +37,8 @@ Open `http://localhost:8080/?diagnostics` to see the performance overlay. It sho
 | `src/persistence` | Save format, compression (in a worker), backups, native-app file helpers |
 | `src/audio` | Soundtrack player and sound effects |
 | `src/vendor` | Recovered third-party code (see `src/vendor/LICENSES.md`) |
-| `public` | `index.html`, compiled `app.css`, art atlases, music, fonts, icons |
+| `public` | `index.html`, `compact.css`, `extras.css`, art atlases, music, fonts, icons |
+| `src/styles` | `app.css` source: Tailwind's frozen output plus the game's own CSS (`game.css`) |
 | `art-source/folio` | The code that paints the v16.11 folio sprite sheet |
 | `tests` | Node tests with golden fixtures captured from the live v16.11 game |
 | `tools/recovery` | How this tree was recovered, kept for the record |
@@ -45,7 +47,7 @@ Open `http://localhost:8080/?diagnostics` to see the performance overlay. It sho
 
 - **Recovered:** every module of game code, split into 52 files by domain, with 547 module-level names restored from the names the build kept (for example `advanceWorld`, `renderIsland`, `CHAPTERS`).
 - **Still terse:** variables *inside* functions keep their one-letter build names, and React components call `jsx()` instead of JSX syntax. Rename and convert each module as it is next edited.
-- **Not recovered:** TypeScript types, comments, and the Tailwind source of `app.css` (the compiled stylesheet is used as-is).
+- **Not recovered:** TypeScript types and comments. The stylesheet was split into Tailwind's output and the game's own CSS in v16.19 (`docs/ENGINEERING.md`).
 - **Equivalence evidence** (see `docs/MILESTONE-1.md`): 48 chapters, 8 council decisions and the full catalog are identical. A busy v16.11 save loads byte-for-byte, and 20 simulated days produced identical worlds before the fixed-step change.
 
 ## Milestone 1 changes beyond v16.11
@@ -87,3 +89,9 @@ discoveries reward exploring. Technologies and Milestone 7 are not built yet. De
 
 Twelve crafts to learn (Market → Lore), trade voyages by knarr (Market → Voyages), and a rival jarl whose
 strength scales the raids, answered with tribute or longships (Army). Details: `docs/MILESTONE-7.md`.
+
+## v16.19: finishing the audit
+
+Footpaths, roof snow, fighting poses and a tighter upright-phone layout; the v14 test suites ported and running;
+type checking for new modules; the stylesheet split into editable sources. Details: `docs/ENGINEERING.md` and
+`docs/MILESTONE-3.md`.

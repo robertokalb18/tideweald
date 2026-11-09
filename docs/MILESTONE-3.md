@@ -30,11 +30,19 @@ Released as v16.14.
 | Tablet, 1024 × 768 | 67% | 67% (unchanged) |
 | Desktop, 1280 × 800 | 73% | 73% (unchanged) |
 
-## Not done in this milestone
+## Added in v16.19
 
-- Paths between houses (roads remain player-built), snow on roofs, spring blossom, and new fighting and fallen
-  poses for soldiers. These need painted sprites, not code drawing.
-- The portrait phone layout keeps its stacked bottom rows (68% of the map visible).
+- **Footpaths:** a trodden path from each longhouse door to the nearest road within four tiles (snowy in winter).
+- **Snow on roofs:** in winter a white wash, cut to the house's own shape, lies over the upper part of each
+  longhouse.
+- **Soldier poses:** in melee, soldiers and raiders lunge toward their foe and lean into the blow; the fallen
+  lie on their side until the fight ends.
+- **Phones held upright:** the stores move to a slim top row and the threat banner shrinks to one line; the
+  visible map went from 68% to 71%.
+
+## Still not done
+
+- Painted (rather than code-drawn) longhouses, a knarr sprite, and spring blossom need a painter.
 
 ## Review notes
 

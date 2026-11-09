@@ -536,7 +536,7 @@ function cancelConstruction(e, t) {
   );
 }
 
-export { CHAPTERS, beginCampaign, buildingResource, campaignObjectives, cancelConstruction, chapterDelivery, charterRate, completeChapter, constructionRate, continueFreebuild, currentChapter, hasLandmark, placementPreview, stockHarbor, tradeMultiplier, updateCampaign,
+export { CHAPTERS, enterChapter, beginCampaign, buildingResource, campaignObjectives, cancelConstruction, chapterDelivery, charterRate, completeChapter, constructionRate, continueFreebuild, currentChapter, hasLandmark, placementPreview, stockHarbor, tradeMultiplier, updateCampaign,
   FINALE_TEXT,
   covenantFinale,
   openFreeBuild,

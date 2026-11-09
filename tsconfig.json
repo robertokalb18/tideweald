@@ -1,0 +1,29 @@
+{
+  // Type-checks the modules written since the rebuild (JavaScript with JSDoc), without compiling anything.
+  // Run: npm run typecheck. The recovered v16.11 modules are not checked: they are minified-style code with
+  // short names, and converting them is a larger job than checking new code as it is written.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "lib": ["es2022", "dom"],
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "files": [
+    "src/world/grid.js",
+    "src/core/step-clock.js",
+    "src/military/battle.js",
+    "src/military/rival.js",
+    "src/economy/chains.js",
+    "src/economy/needs.js",
+    "src/economy/voyages.js",
+    "src/progression/lore.js",
+    "src/world/fog.js"
+  ]
+}

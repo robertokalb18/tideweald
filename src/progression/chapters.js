@@ -324,7 +324,7 @@ var ACTS = [
       'Herbalists need mature woodland; the bathhouse needs water nearby. Keep the harvest steady while you prepare the cargo.',
       1250,
       [
-        _('herbalist', 2, 'Completed herbalist longhouses'),
+        _('herbalist', 2, 'Completed herbalist huts'),
         _('bathhouse', 1, 'Completed bathhouses'),
         _('steadyFood', 200, 'Food harvested each day, 3 days running'),
       ],

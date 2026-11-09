@@ -46,7 +46,7 @@ function drawStatic(e, t, a, n) {
     : a.kind === 'plant'
       ? drawPlant(e, a.value, t.images, t.world, n, t.season, t.wet, a)
       : a.kind === 'building'
-        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal, a.yard, t.season, a.tier, a.craft)
+        ? drawBuildingStatic(e, a.value, t.images, t.world, n, t.pal, a.yard, t.season, a.tier, a.craft, a.foot)
         : a.kind === 'feature'
           ? drawFeature(e, a.value, t.images, n)
           : drawObject(e, a.value);
@@ -484,9 +484,16 @@ function drawMilitary(e, t, a, n, r, o) {
   let s = (t.enemy ? 2 : 0) + (t.dx + t.dy < 0 ? 1 : 0),
     c = t.walking ? Math.floor(t.phase) % 4 : 0,
     u = t.walking ? Math.sin((t.phase * Math.PI) / 2) : 0;
+  // Milestone 3: in melee a soldier lunges toward his foe and back, leaning into the blow.
+  let f = t.fighting ? Math.max(0, Math.sin(t.phase * 1.7)) : 0,
+    q = Math.hypot(t.dx, t.dy) || 1,
+    W = project(t.dx / q, t.dy / q),
+    Z = project(0, 0),
+    lx = ((W.x - Z.x) / 32) * f * 4,
+    ly = ((W.y - Z.y) / 16) * f * 2;
   (e.save(),
-    e.translate(l.x, l.y - Math.abs(u) * 0.55),
-    e.rotate(u * 0.018),
+    e.translate(l.x + lx, l.y + ly - Math.abs(u) * 0.55),
+    e.rotate(u * 0.018 + (t.fighting ? f * 0.12 * (t.dx - t.dy < 0 ? -1 : 1) : 0)),
     ready(a.units)
       ? sprite(e, a.units, s * 4 + c, 0, 0, 26, 1, t.dx - t.dy < 0 ? -1 : 1, 'units')
       : sprite(e, a.norse, 6 + (t.id % 2), 0, 0, 26, 1, 1, 'norse'),

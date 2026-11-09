@@ -61,6 +61,33 @@ function sprite(e, t, a, n, r, o, l = 1, s = 1, c = 'flora', u = 0, d = 'none') 
     e.drawImage(v, -p / 2, -g * 0.94, p, g),
     e.restore());
 }
+// Milestone 3: snow on roofs. A white wash over the upper part of a sprite (the roof), cut to the sprite's own
+// shape, prepared once per sprite and drawn over it in winter.
+var snowCache = new Map();
+function snowSprite(e, t, a, n, r, o, l = 1, s = 0) {
+  if (!ready(t)) return;
+  let c = spriteRect(a, n),
+    u = r / Math.max(c.w, c.h),
+    d = c.w * u,
+    m = c.h * u,
+    h = preparedSprite(t, a, n, 'none', s),
+    p = `${a}|${n}|${h.width}x${h.height}|${t.src ?? ''}`,
+    g = snowCache.get(p);
+  if (!g) {
+    ((g = document.createElement('canvas')), (g.width = h.width), (g.height = h.height));
+    let w = g.getContext('2d');
+    (w.drawImage(h, 0, 0), (w.globalCompositeOperation = 'source-atop'));
+    let y = w.createLinearGradient(0, 0, 0, h.height);
+    (y.addColorStop(0, 'rgba(250,250,247,.95)'),
+      y.addColorStop(0.42, 'rgba(246,247,245,.85)'),
+      y.addColorStop(0.58, 'rgba(246,247,245,0)'),
+      (w.fillStyle = y),
+      w.fillRect(0, 0, h.width, h.height),
+      snowCache.size > 64 && snowCache.clear(),
+      snowCache.set(p, g));
+  }
+  (e.save(), e.translate(o.x, o.y), e.scale(l, 1), (e.globalAlpha *= 0.8), e.drawImage(g, -d / 2, -m * 0.94, d, m), e.restore());
+}
 var tier = (e) => (e > 420 ? 520 : e > 300 ? 400 : e > 220 ? 300 : e > 150 ? 240 : 0);
 function plantFilter(e, t, a) {
   let n = t.deciduous && a === 2 && e.growth > 0.45,
@@ -117,6 +144,34 @@ function buildingSprite(e) {
 // Milestone 3: a fenced yard of trodden earth around each longhouse that has room for one (no other building
 // within two tiles). Drawn with the building, so it is part of that building's static entry and fingerprint;
 // the season is folded into the entry's key because the fence wears snow in winter.
+function footpathTo(e, t) {
+  let a = null,
+    n = 1e9;
+  for (let r = -4; r <= 4; r++)
+    for (let o = -4; o <= 4; o++) {
+      let l = cellAt(e, t.x + o, t.y + r);
+      if (!l?.road) continue;
+      let s = Math.hypot(l.x + 0.5 - t.x, l.y + 0.5 - t.y);
+      s > 1.2 && s < n && ((n = s), (a = { x: l.x + 0.5, y: l.y + 0.5 }));
+    }
+  return a;
+}
+function drawFootpath(e, t, a, n, r) {
+  let o = n === PALETTES.carta;
+  (e.save(),
+    (e.lineCap = 'round'),
+    (e.strokeStyle = r === 3 ? 'rgba(236,236,228,.75)' : o ? 'rgba(176,150,100,.55)' : 'rgba(160,120,70,.5)'),
+    (e.lineWidth = 5),
+    e.beginPath(),
+    e.moveTo(t.x, t.y + 12),
+    e.quadraticCurveTo((t.x + a.x) / 2 + 6, (t.y + 12 + a.y) / 2, a.x, a.y),
+    e.stroke(),
+    (e.strokeStyle = o ? 'rgba(120,96,60,.35)' : 'rgba(110,80,40,.35)'),
+    (e.lineWidth = 1),
+    e.setLineDash([2, 4]),
+    e.stroke(),
+    e.restore());
+}
 function yardFlags(e) {
   let t = new Map(),
     a = new Set(),
@@ -266,16 +321,20 @@ function drawCraft(e, t, a, n, r) {
   }
   e.restore();
 }
-function drawBuildingStatic(e, t, a, n, r, o, yard = !1, season = 0, houseTier = 0, craft = 0) {
+function drawBuildingStatic(e, t, a, n, r, o, yard = !1, season = 0, houseTier = 0, craft = 0, foot = null) {
   let l = project(t.x, t.y);
   l.y -= cellAt(n, t.x, t.y)?.elevation ?? 0;
   let s = (BUILDING_SIZES[t.kind]?.size ?? 132) * (houseTier >= 3 ? 1.08 : 1);
   if (isBuilt(t)) {
+    foot && drawFootpath(e, l, foot, o, season);
     yard && drawYard(e, t, l, o, season);
     craft && drawCraft(e, l, craft, o, season);
     houseTier && drawTierBack(e, l, o, houseTier);
     let c = buildingSprite(t);
     (sprite(e, a[c.atlas], c.index, l.x, l.y + s * 0.15, s, 1, t.orientation ? -1 : 1, c.atlas, tier(s * r)),
+      t.kind === 'cottage' &&
+        season === 3 &&
+        snowSprite(e, a[c.atlas], c.atlas, c.index, s, { x: l.x, y: l.y + s * 0.15 }, t.orientation ? -1 : 1, tier(s * r)),
       houseTier && drawTierFront(e, l, o, houseTier));
   } else {
     let c = buildingSprite(t),
@@ -500,19 +559,25 @@ function staticsFor(e, t) {
     ((c = mix(mix(c, Math.round(o.x * 2)), Math.round(o.y * 2))),
       yard && (c = mix(c, 7001 + t)),
       tier > 1 && (c = mix(c, 7100 + tier)),
-      craft && (c = mix(c, 7200 + craft)),
+      craft && (c = mix(c, 7200 + craft)));
+    // Milestone 3: a trodden footpath from a longhouse door to the nearest road within four tiles.
+    let foot = r.kind === 'cottage' && isBuilt(r) ? footpathTo(e, r) : null,
+      fp = foot && project(foot.x, foot.y);
+    (foot && ((fp.y -= cellAt(e, foot.x, foot.y)?.elevation ?? 0), (c = mix(mix(c, 7300 + foot.x * 2), foot.y * 2))),
+      r.kind === 'cottage' && (c = mix(c, 7500 + t)),
       a.push({
         kind: 'building',
         value: r,
         yard,
         tier,
         craft,
+        foot: fp,
         depth: r.x + r.y,
         order: n++,
-        x0: o.x - l * 0.56,
-        x1: o.x + l * 0.56,
+        x0: Math.min(o.x - l * 0.56, fp ? fp.x - 4 : 1e9),
+        x1: Math.max(o.x + l * 0.56, fp ? fp.x + 4 : -1e9),
         y0: o.y + l * 0.15 - l * 0.96,
-        y1: o.y + Math.max(l * 0.22, l * 0.15 + l * 0.08) + 4,
+        y1: Math.max(o.y + Math.max(l * 0.22, l * 0.15 + l * 0.08) + 4, fp ? fp.y + 4 : -1e9),
         vk: c,
         q: 0,
       }));

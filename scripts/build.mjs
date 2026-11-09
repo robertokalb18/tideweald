@@ -16,4 +16,15 @@ await esbuild.build({
   outfile: `${out}/app.js`,
   logLevel: 'warning',
 });
+// The stylesheet is built from src/styles (Tailwind's frozen v4.2.1 output plus the game's own CSS).
+await esbuild.build({
+  entryPoints: ['src/styles/app.css'],
+  bundle: true,
+  minify: true,
+  target: ['esnext'],
+  external: ['fonts/*', '*.woff', '*.woff2', '*.png', '*.webp', '*.svg'],
+  outfile: `${out}/app.css`,
+  logLevel: 'warning',
+});
 console.log(`dist/app.js ${(statSync(`${out}/app.js`).size / 1024).toFixed(0)} KB`);
+console.log(`dist/app.css ${(statSync(`${out}/app.css`).size / 1024).toFixed(0)} KB`);

@@ -165,11 +165,12 @@ const routeLength = (route) => route.length / 2;
 
 /** Counts of defenses in play, from the island's completed buildings. */
 // Lore (Milestone 6) arrives through opts.lore: { shieldwall, bows, ditch }, worked out by the frontier rules.
+/** @param {any} w @param {{ lore?: { ditch?: boolean } }} [opts] */
 function defenses(w, opts = {}) {
   const towers = [],
-    palisades = [],
+    // The palisade list carries the gate radius (wider with Ditch and bank) as `r`.
+    palisades = Object.assign(/** @type {any[]} */ ([]), { r: PALISADE.radius + (opts.lore?.ditch ? 1.5 : 0) }),
     halls = [];
-  palisades.r = PALISADE.radius + (opts.lore?.ditch ? 1.5 : 0);
   for (const b of w.buildings) {
     if (!built(b)) continue;
     if (TOWERS[b.kind]) towers.push(b);

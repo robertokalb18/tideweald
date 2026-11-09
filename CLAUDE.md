@@ -29,3 +29,6 @@ New rules from Milestone 1:
   Milestone 7 are built ahead of the playtest gates. Tune them from the playtest notes.
 - Lore (`progression/lore.js`), voyages (`economy/voyages.js`) and the jarl (`military/rival.js`) are in v16.18
   (`docs/MILESTONE-7.md`). `lore.js` and `rival.js` import nothing; keep them leaves.
+- v16.19: `npm test` also runs the ported v14 suites (`tests/v14`); adapt a ported test only where the game changed
+  on purpose, and say so beside the line. Run `npm run typecheck` for new modules (add them to `tsconfig.json`).
+  Styles live in `src/styles/game.css` (built into `dist/app.css`); `src/styles/tailwind.css` is frozen output.
