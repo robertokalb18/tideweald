@@ -32,3 +32,7 @@ New rules from Milestone 1:
 - v16.19: `npm test` also runs the ported v14 suites (`tests/v14`); adapt a ported test only where the game changed
   on purpose, and say so beside the line. Run `npm run typecheck` for new modules (add them to `tsconfig.json`).
   Styles live in `src/styles/game.css` (built into `dist/app.css`); `src/styles/tailwind.css` is frozen output.
+- v17: the direction, the three pillars and the exclusion list are in `docs/DIRECTION.md`; new systems must serve a
+  pillar. The river's year (`world/river.js`) is a pure function of island time: save nothing for it except
+  `frontier.surge`, keep its imports to `grid.js` and `seasons.js`, and keep the flood from changing terrain or
+  walkability. Draw its map layers as paths (a scaled full-island image cost a frame; see `docs/V17.md`).

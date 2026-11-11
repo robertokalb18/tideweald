@@ -65,3 +65,71 @@
   display: block;
   opacity: 0.75;
 }
+/* v17 */
+.catalog-later {
+  margin: 6px 14px 2px;
+  font-size: 12.5px;
+  opacity: 0.75;
+}
+.resource-bar[role='button'] {
+  cursor: pointer;
+}
+.hud-clock small.river-note {
+  color: #1f5d8f;
+  font-weight: 700;
+  white-space: nowrap;
+}
+:root[data-art='classic'] .hud-clock small.river-note {
+  color: #0d5c75;
+}
+.river-year {
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(47, 93, 145, 0.08);
+  border: 1px solid rgba(47, 93, 145, 0.22);
+}
+.river-year h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+.river-year p {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.river-year ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 4px 16px;
+  font-size: 12.5px;
+}
+.river-year li {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+}
+.river-year li b {
+  flex: none;
+  min-width: 78px;
+}
+.river-year li.river-high b {
+  color: #1f5d8f;
+}
+.river-year li.river-ice b {
+  color: #5d7480;
+}
+.river-year li.river-low b {
+  color: #8a6a2c;
+}
+.placement-bar .plain-note {
+  color: #1f5d8f;
+}
+
+.clock-block .river-line {
+  color: #1f5d8f;
+  font-weight: 650;
+}

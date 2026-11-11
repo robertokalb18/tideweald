@@ -5,6 +5,7 @@ import { seasonAt } from '../world/seasons.js';
 import { battleOutcome, forecastBattle, planRaid, startBattle, stepBattle } from './battle.js';
 import { knows, loreSignature } from '../progression/lore.js';
 import { atPeace, rivalFactor, stepRival } from './rival.js';
+import { RIVER, raidPossible, raidWater } from '../world/river.js';
 
 var DEFENSE_ITEMS = [
     {
@@ -116,7 +117,7 @@ function log(e, t, a) {
 }
 var THREAT_ADVICE = {
     raid: 'They land on the shore and march on the stores. Towers shoot raiders within 7 tiles, a palisade gate shields stores within 5 tiles, and guards fight by formation. If half the band reaches unguarded stores, they set them alight.',
-    flood: 'Granaries keep stores dry: each prevents 30% of flood losses, up to 80%.',
+    flood: 'The river will cover its low bank for two days: buildings there stop work. Granaries keep stores dry: each prevents 30% of the losses, up to 80%.',
     wildfire:
       'At least 25 clean freshwater tiles reduce losses by 65%. Keep rivers and ponds across the island.',
     gale: 'A lighthouse prevents 65% of gale losses. Each granary adds 15%, up to 85% total protection.',
@@ -155,7 +156,10 @@ var battleOpts = (e) => ({
 function raidPlan(e, t, save = !1) {
   if (t.route) return t;
   let a = peekPlans.get(e);
-  if (a?.id !== t.id) peekPlans.set(e, (a = { id: t.id, plan: planRaid(e, t.id) }));
+  // v17: the river on the day they land decides how far upstream the ships get.
+  let w = t.tide ?? raidWater(e, t.dueDay);
+  if (a?.id !== t.id || a.tide !== w)
+    peekPlans.set(e, (a = { id: t.id, tide: w, plan: { ...planRaid(e, t.id, RIVER.landing[w]), tide: w } }));
   return save && Object.assign(t, a.plan), a.plan;
 }
 var forecasts = new WeakMap();
@@ -359,6 +363,11 @@ function resolveThreat(e, t) {
   // Raids are fought on the map and settled by resolveRaid; this handles the weather threats.
   let r = !1,
     o = '';
+  // v17: a river flood is high water out of season: the floodplain is under water for two days (world/river.js).
+  if (t.kind === 'flood') {
+    let u = Math.floor(e.time + 1e-8) + 1;
+    a.surge = { from: u, until: u + RIVER.surgeDays };
+  }
   if (t.kind === 'wildfire' && threatProtection(e, t) < 0.5) {
     let u = e.plants.find((d) => d.health > 0.5 && d.growth > 0.7);
     if (u) {
@@ -471,7 +480,10 @@ function stepFrontier(e, dt = 0.025) {
       o = seasonAt(t.nextEventDay - 1).index,
       l = t.scripted,
       s =
-        l || (r % 2 === 1 && !atPeace(e)) ? 'raid' : ['flood', 'wildfire', 'gale', 'blizzard'][o],
+        // No longship can row a frozen river: a raid that would land on the ice gives way to the weather.
+        l || (r % 2 === 1 && !atPeace(e) && raidPossible(e, Math.max(a + n, t.nextEventDay)))
+          ? 'raid'
+          : ['flood', 'wildfire', 'gale', 'blizzard'][o],
       c =
         l?.title ??
         {

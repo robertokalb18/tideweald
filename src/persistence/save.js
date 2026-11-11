@@ -37,6 +37,7 @@ var gt = z.number().finite().min(0).max(1e12),
     landing: cellPair.optional(),
     water: cellPair.optional(),
     route: z.array(xe.max(GRID_W)).max(600).optional(),
+    tide: z.enum(['high', 'normal', 'low']).optional(),
   },
   hp = z.number().finite().min(0).max(1e6),
   pos = z.number().finite().min(-8).max(GRID_W + 8),
@@ -118,6 +119,8 @@ var gt = z.number().finite().min(0).max(1e12),
         })
         .optional(),
       battle: BATTLE.optional(),
+      // v17: high water out of season, from a River flood threat (day numbers).
+      surge: z.object({ from: xe, until: xe }).optional(),
       // Milestone 7: the Red Sail jarl.
       rival: z
         .object({

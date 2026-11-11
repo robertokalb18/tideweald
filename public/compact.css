@@ -8,7 +8,7 @@
     --hud-top: calc(var(--safe-top) + 6px);
     --row-h: 40px;
     --res-w: min(300px, 36%);
-    --time-w: 118px;
+    --time-w: 124px;
     --land-tab-w: min(360px, calc(100% - var(--edge-l) - var(--edge-r) - 230px));
   }
   /* Top row: stores on the left, the chapter goal in the middle, time on the right. */
@@ -25,8 +25,53 @@
     height: 22px;
     padding: 3px;
   }
+  /* v17: keep the per-day change visible (it was hidden here in v16.14), small, under the stock. */
   :root[data-art] body .sandbox .resource .resource-rate {
+    display: block;
+    font-size: 9.5px;
+    line-height: 1;
+    margin-top: -1px;
+  }
+  :root[data-art] body .sandbox .resource strong {
+    line-height: 1.05;
+  }
+  /* v17: the next step is the headline of the mission chip; the chapter title is the small line.
+     (v16 hid the step on short landscape screens, so the objective was never on screen.) */
+  :root[data-art] body .sandbox .mobile-mission > span:not(.mission-number) {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+  :root[data-art] body .sandbox .mobile-mission :is(small, strong) {
+    line-height: 1.15;
+    margin: 0;
+    max-width: 100%;
+  }
+  :root[data-art] body .sandbox .mobile-mission small {
+    display: block;
+    font-size: calc(13.5px * var(--fs, 1));
+    font-weight: 650;
+    opacity: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  :root[data-art] body .sandbox .mobile-mission small:empty {
     display: none;
+  }
+  :root[data-art] body .sandbox .mobile-mission strong {
+    font-size: calc(10.5px * var(--fs, 1));
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   :root[data-art] body .sandbox .mobile-mission {
     top: var(--hud-top);

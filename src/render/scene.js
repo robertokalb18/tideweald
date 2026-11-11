@@ -36,6 +36,7 @@ import { bridgeAt, bridgePlan, bridgeTiles } from '../settlement/bridges.js';
 import { animalPose, militaryActors, raidLocation } from '../world/actors.js';
 import { stepProgress } from '../core/step-clock.js';
 import { SITE_KINDS, exploredMap } from '../world/fog.js';
+import { riverActive, riverAmounts, riverMask } from '../world/river.js';
 import { BUILDING_SIZES, CATALOG, GRID_H, GRID_W, Ia, clamp, isBuildingItem, isBuilt } from '../world/catalog.js';
 import { seasonAt } from '../world/seasons.js';
 import { cellAt } from '../world/world.js';
@@ -610,6 +611,7 @@ function renderIsland(e, t, a, n, r, o, l, s, c, u, d = !1, m = 0, h = {}) {
         }
     (e.stroke(), (p.animating = p.animating || !d));
   }
+  drawRiver(e, M, c);
   drawFleet(e, t, o, l, d);
   let j = raidLocation(t);
   if (j?.spotted) {
@@ -904,6 +906,88 @@ function drawStatusSign(e, t, a, n, r, o) {
           e.lineTo(-1, -1.5),
           e.lineTo(4, -7),
           e.stroke()),
+    e.restore());
+}
+// v17, the river's year on the map. Four one-pixel-per-cell layers, rebuilt only when the terrain changes and
+// drawn each frame over the terrain and under the buildings (so not part of any tile cache):
+//   flood  water over the floodplain at high water      ice   the frozen river in winter
+//   low    mud along the banks at low water             hint  the floodplain, shown while placing a building
+function riverLayers(e) {
+  let t = e.world,
+    a = `${e.style}|${t.terrainRevision ?? 0}`;
+  if (e.river?.key === a && e.river.cells === t.cells) return e.river;
+  // One vector path per layer, in grid units: the outline of the masked cells, traced into loops and drawn
+  // through the middle of each edge so corners and stair-steps come out round. A path costs only the pixels
+  // it covers; a scaled image of the whole island cost a frame on a large window.
+  let n = riverMask(t),
+    r = e.style === 'carta',
+    o = (l) => {
+      let s = (g, v) => g >= 0 && v >= 0 && g < GRID_W && v < GRID_H && (n[v * GRID_W + g] & l) !== 0,
+        c = new Map(), // start corner -> edges leaving it, each [x0, y0, x1, y1], clockwise round the cells
+        u = (g, v, f, y) => {
+          let b = v * (GRID_W + 1) + g,
+            k = c.get(b);
+          k ? k.push([g, v, f, y]) : c.set(b, [[g, v, f, y]]);
+        };
+      for (let g = 0; g < GRID_H; g++)
+        for (let v = 0; v < GRID_W; v++)
+          s(v, g) &&
+            (s(v, g - 1) || u(v, g, v + 1, g),
+            s(v + 1, g) || u(v + 1, g, v + 1, g + 1),
+            s(v, g + 1) || u(v + 1, g + 1, v, g + 1),
+            s(v - 1, g) || u(v, g + 1, v, g));
+      let d = new Path2D();
+      for (let g of c.values())
+        for (; g.length; ) {
+          let v = [],
+            f = g.pop();
+          for (; f; ) {
+            v.push(f);
+            let y = c.get(f[3] * (GRID_W + 1) + f[2]);
+            f = y?.length ? y.pop() : null;
+          }
+          if (v.length < 4) continue;
+          let y = v.length,
+            b = (k) => v[((k % y) + y) % y];
+          d.moveTo((b(0)[0] + b(0)[2]) / 2, (b(0)[1] + b(0)[3]) / 2);
+          for (let k = 0; k < y; k++) {
+            let E = b(k),
+              M = b(k + 1);
+            d.quadraticCurveTo(E[2], E[3], (M[0] + M[2]) / 2, (M[1] + M[3]) / 2);
+          }
+          d.closePath();
+        }
+      return d;
+    };
+  return (e.river = {
+    key: a,
+    cells: t.cells,
+    flood: [o(2), r ? 'rgba(126,178,198,0.94)' : 'rgba(44,140,152,0.92)'],
+    ice: [o(1), r ? 'rgba(238,240,234,0.88)' : 'rgba(226,240,246,0.88)'],
+    low: [o(8), r ? 'rgba(168,146,104,0.78)' : 'rgba(150,124,84,0.78)'],
+    hint: [o(2), r ? 'rgba(47,93,145,0.33)' : 'rgba(120,210,235,0.35)'],
+  });
+}
+function drawRiver(e, t, a) {
+  let n = t.world;
+  if (!riverActive(n)) return;
+  let r = riverAmounts(n),
+    o = !!a && !!CATALOG[a] && isBuildingItem(CATALOG[a]);
+  if (!r.high && !r.ice && !r.low && !o) return;
+  let l = riverLayers(t),
+    s = project(0, 0),
+    c = ([u, d], m) => ((e.globalAlpha = m), (e.fillStyle = d), e.fill(u));
+  (e.save(),
+    e.transform(TILE_W / 2, TILE_H / 2, -TILE_W / 2, TILE_H / 2, s.x, s.y),
+    o && r.high < 0.5 && c(l.hint, 1),
+    r.high > 0 &&
+      (c(l.flood, r.high),
+      // an inked waterline, like the map's other outlines
+      (e.lineWidth = 0.07),
+      (e.strokeStyle = t.style === 'carta' ? 'rgba(52,96,128,0.6)' : 'rgba(16,86,98,0.6)'),
+      e.stroke(l.flood[0])),
+    r.low > 0 && c(l.low, r.low),
+    r.ice > 0 && c(l.ice, r.ice),
     e.restore());
 }
 // Milestone 7: knarrs leaving on and coming home from trade voyages, and longships sailing against the jarl,

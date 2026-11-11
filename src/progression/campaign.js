@@ -408,7 +408,11 @@ function updateCampaign(e) {
           'Warm days bring dry spells. Rivers keep the fields alive.',
           'Leaves turn and orchards yield 30% more. Store food and timber before winter.',
           'Snow settles on the island. Fields and orchards produce less; settlers burn timber for warmth.',
-        ][n.index],
+        ][n.index] +
+          // v17: the first words of the game point at the river.
+          (n.index === 0 && n.year === 1
+            ? ' The river\u2019s low bank is the richest ground here, and on Day 5 the thaw will flood it for three days.'
+            : ''),
       )));
   let o =
     !t.settled && t.chapter === 3 && a >= COMMISSION_START && campaignObjectives(e).every((l) => l.done);
@@ -521,7 +525,15 @@ function placementPreview(e, t, a, n, r = 0) {
   )
     return c(t === 'watermill' ? 'Needs fresh water within four tiles' : 'Needs water within four tiles');
   let d = production(e, { id: 0, kind: t, x: a, y: n, progress: 0, buildProgress: 1, stored: 0 }, !0);
-  return { ok: !0, cost: s, rate: d.rate, resource: d.resource, reason: d.reason };
+  return {
+    ok: !0,
+    cost: s,
+    rate: d.rate,
+    resource: d.resource,
+    reason: d.reason,
+    plain: d.plain,
+    riverNote: d.riverNote,
+  };
 }
 function cancelConstruction(e, t) {
   let a = e.buildings.find((r) => r.id === t);

@@ -112,7 +112,7 @@ var FORMATION_NOTES = {
       label: null,
       lines: a.spotted
         ? [
-            `${a.watched ? 'The watchtower has' : 'Fishermen have'} spotted their sails. They will land ${l} tiles from the ${o} and march on it; their route is marked on the map.`,
+            `${a.watched ? 'The watchtower has' : 'Fishermen have'} spotted their sails. They will land ${l} tiles from the ${o} and march on it; their route is marked on the map.${{ high: ' They come on the flood: high water carries the ships close.', low: ' Low water grounds their ships downstream: they have further to march.' }[t.tide] ?? ''}`,
             forecastText(r, o),
           ]
         : [

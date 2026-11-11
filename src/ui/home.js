@@ -55,6 +55,7 @@ import {
 import { FrontierPanel, settlementLedger } from './frontier-panel.js';
 import { LorePanel } from './lore-panel.js';
 import { VoyagesPanel } from './voyages-panel.js';
+import { LEVEL_NAMES, riverActive, riverLevel, riverCalendar, riverForecast, riverHeadline, riverLine } from '../world/river.js';
 import {
   $0,
   $4,
@@ -414,7 +415,7 @@ function Home() {
         )),
         (th.current = ke));
       let Mt = performance.now(),
-        ht = t.current.revision;
+        ht = `${t.current.revision}|${riverLevel(t.current)}`; // v17: the river changes the rates too
       if (t.current.story.started && ht !== jc.current && (js.current.paused || Mt - sg.current > 2500)) {
         ((sg.current = Mt), (jc.current = ht));
         let ee = settlementLedger(t.current);
@@ -847,8 +848,17 @@ function Home() {
     }, [ze]));
   let oa = CATALOG_ITEMS.find((S) => S.id === C),
     Ya = nt ? cellAt(t.current, nt.x, nt.y) : null,
+    // v17: before the fleet arrives, the build menu leaves out buildings that need a material the island has
+    // never gathered, so the opening offers a handful of real choices instead of twenty-seven cards.
+    notYet = (S) =>
+      t.current.story.mode === 'campaign' &&
+      !t.current.story.settled &&
+      isBuildingItem(S) &&
+      Ga.some((B) => B.id !== 'gold' && itemCost(S)[B.id] > 0 && !(t.current.story.collected[B.id] > 0)),
+    laterCount = CATALOG_ITEMS.filter((S) => S.category === s && notYet(S)).length,
     fh = CATALOG_ITEMS.filter(
       (S) =>
+        !notYet(S) &&
         S.category === s &&
         (!isBuildingItem(S) ||
           k === 'all' ||
@@ -1038,7 +1048,16 @@ function Home() {
       }),
       (0, jsxRuntime.jsxs)('div', {
         className: 'resource-bar',
-        'aria-label': 'Settlement resources',
+        // v17: the stores answer "why?": a tap opens the daily ledger (output, costs and net for each resource).
+        role: 'button',
+        tabIndex: 0,
+        'aria-label': 'Settlement resources. Open the daily ledger',
+        onClick: () => {
+          (haptic(), Nt.tap(), ga(), l(!1), M('ledger'), g(!0));
+        },
+        onKeyDown: (S) => {
+          (S.key === 'Enter' || S.key === ' ') && (S.preventDefault(), ga(), l(!1), M('ledger'), g(!0));
+        },
         children: [
           Ga.map((S) => {
             let B = og?.[S.id] ?? 0,
@@ -1360,6 +1379,16 @@ function Home() {
                   ),
                 ],
               }),
+              laterCount > 0 &&
+                (0, jsxRuntime.jsxs)('p', {
+                  className: 'catalog-later',
+                  children: [
+                    laterCount,
+                    ' more ',
+                    laterCount === 1 ? 'building needs' : 'buildings need',
+                    ' timber or stone. They appear here once you have gathered some.',
+                  ],
+                }),
               hh > 1 &&
                 (0, jsxRuntime.jsxs)('div', {
                   className: 'catalog-pages',
@@ -1881,8 +1910,19 @@ function Home() {
                           }),
                         ],
                       }),
-                      (0, jsxRuntime.jsx)('small', {
-                        children: E ? 'Time is paused' : b === 1 ? 'Settlement time' : `${b}\xD7 time-lapse`,
+                      (0, jsxRuntime.jsxs)('small', {
+                        children: [
+                          E ? 'Time is paused' : b === 1 ? 'Settlement time' : `${b}\xD7 time-lapse`,
+                          // v17: the river's state and its next change; the coming changes are in the tooltip.
+                          riverActive(t.current) &&
+                            (0, jsxRuntime.jsxs)('span', {
+                              className: 'river-line',
+                              title: riverCalendar(t.current)
+                                .map((S) => `${LEVEL_NAMES[S.level]}: Day ${S.day}`)
+                                .join(' \xB7 '),
+                              children: [' \xB7 ', riverLine(t.current)],
+                            }),
+                        ],
                       }),
                     ],
                   }),
@@ -2067,6 +2107,12 @@ function Home() {
                               : (sr.rate ?? 0) > 0
                                 ? (0, jsxRuntime.jsx)(Flows, { flows: buildingFlows(j.id, sr.rate ?? 0) })
                                 : 'no output on this site',
+                            // v17: say so when the site is on the floodplain (it is tinted blue on the map).
+                            sr.plain &&
+                              (0, jsxRuntime.jsxs)('span', {
+                                className: 'plain-note',
+                                children: [' \xB7 ', sr.riverNote],
+                              }),
                           ],
                         })
                     : sr.reason,
@@ -2125,7 +2171,7 @@ function Home() {
                 }),
                 (0, jsxRuntime.jsxs)('button', {
                   className: 'hud-clock',
-                  'aria-label': `Day ${n.day}, ${jn.name}. Open time controls`,
+                  'aria-label': `Day ${n.day}, ${jn.name}.${riverHeadline(t.current) ? ` River: ${riverHeadline(t.current)}.` : ''} Open time controls`,
                   onClick: () => {
                     (haptic(), Nt.tap(), W('time'), l(!1), Pe(null), O(!1));
                   },
@@ -2134,8 +2180,12 @@ function Home() {
                     (0, jsxRuntime.jsxs)('span', {
                       children: [
                         (0, jsxRuntime.jsxs)('strong', { children: ['Day ', n.day] }),
+                        // v17: when the river is about to change (or has), it takes the place of the hour.
                         (0, jsxRuntime.jsx)('small', {
-                          children: za ? 'Skipping\u2026' : E ? 'Paused' : `${ae}:00 \xB7 ${b}\xD7`,
+                          className: riverHeadline(t.current) ? 'river-note' : void 0,
+                          children: za
+                            ? 'Skipping\u2026'
+                            : riverHeadline(t.current) || (E ? 'Paused' : `${ae}:00 \xB7 ${b}\xD7`),
                         }),
                       ],
                     }),
@@ -2382,6 +2432,40 @@ function Home() {
                         }),
                       ],
                     }),
+                    riverActive(t.current) &&
+                      (0, jsxRuntime.jsxs)('section', {
+                        className: 'river-year',
+                        'aria-label': 'The river',
+                        children: [
+                          (0, jsxRuntime.jsxs)('h3', {
+                            children: ['The river: ', LEVEL_NAMES[riverForecast(t.current).level].toLowerCase()],
+                          }),
+                          (0, jsxRuntime.jsx)('p', {
+                            children: {
+                              high: 'The low bank is under water: buildings there stop work. River fishing +25%. Longships row far upstream, so a raid lands close.',
+                              normal:
+                                'The bank the river waters is the bank it floods: farms there bear 30% more, and stop for the three days of the spring flood.',
+                              low: 'River fishing \u221225%. Longships ground downstream, so raiders must march further.',
+                              ice: 'No longship can row: no raids until the thaw. River fishing is half, through the ice.',
+                            }[riverForecast(t.current).level],
+                          }),
+                          (0, jsxRuntime.jsx)('ol', {
+                            children: riverCalendar(t.current).map((S) =>
+                              (0, jsxRuntime.jsxs)(
+                                'li',
+                                {
+                                  className: `river-${S.level}`,
+                                  children: [
+                                    (0, jsxRuntime.jsx)('b', { children: LEVEL_NAMES[S.level] }),
+                                    ` Day ${S.day} \xB7 in ${S.inDays} day${S.inDays === 1 ? '' : 's'}`,
+                                  ],
+                                },
+                                S.day,
+                              ),
+                            ),
+                          }),
+                        ],
+                      }),
                     (0, jsxRuntime.jsxs)('div', {
                       className: 'segmented',
                       role: 'group',

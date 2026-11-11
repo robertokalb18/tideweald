@@ -120,7 +120,8 @@ function findRoute(w, from, to) {
  * Where a raid lands and how it walks. Decided once, when the threat is announced, so that the
  * player can see it (with a watchtower) and prepare. Deterministic: depends only on the island and id.
  */
-export function planRaid(w, id) {
+/** `reach` is how far up the river the ships get: { min, ideal } tiles from the target (the river's year sets it). */
+export function planRaid(w, id, reach = { min: 9, ideal: 16 }) {
   const target = raidTarget(w, id),
     tx = Math.floor(target.x),
     ty = Math.floor(target.y),
@@ -134,11 +135,12 @@ export function planRaid(w, id) {
         if (d < minD || d > maxD || !coastal(w, x, y)) continue;
         const a = Math.atan2(y + 0.5 - target.y, x + 0.5 - target.x),
           diff = Math.abs(((a - want + Math.PI * 3) % (Math.PI * 2)) - Math.PI),
-          score = wide ? d + diff * 3 : diff * 10 + Math.abs(d - 16) * 0.35;
+          score = wide ? d + diff * 3 : diff * 10 + Math.abs(d - reach.ideal) * 0.35;
         if (score < bestScore) (bestScore = score), (best = { x, y });
       }
   };
-  scan(30, 9, 30);
+  scan(30, reach.min, 30);
+  if (!best && reach.min > 9) scan(30, 9, 30);
   if (!best) scan(Math.max(GRID_W, GRID_H), 0, Infinity, true);
   if (!best) best = { x: Math.min(GRID_W - 1, tx + 8), y: Math.min(GRID_H - 1, ty + 8) };
   // The ship waits a little way out to sea, beside the beach.

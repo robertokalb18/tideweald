@@ -95,3 +95,11 @@ strength scales the raids, answered with tribute or longships (Army). Details: `
 Footpaths, roof snow, fighting poses and a tighter upright-phone layout; the v14 test suites ported and running;
 type checking for new modules; the stylesheet split into editable sources. Details: `docs/ENGINEERING.md` and
 `docs/MILESTONE-3.md`.
+
+## v17: the river's year
+
+The settlement's river now has a calendar: a thaw flood (spring Days 5–7), low water (Days 22–25) and ice
+(Days 39–48). The low bank bears 30% more for farms but floods; river fishing rises and falls with the water;
+longships land close on the flood, far at low water and not at all on ice. Also: the next objective and the
+daily change are shown on a sideways phone, the Build menu holds back buildings you cannot yet supply, and the
+resource bar opens the ledger. Direction and rules: `docs/DIRECTION.md`; findings and checks: `docs/V17.md`.

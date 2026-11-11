@@ -1,6 +1,6 @@
 {
   "name": "tideweald",
-  "version": "16.19.0",
+  "version": "17.0.0",
   "private": true,
   "type": "module",
   "description": "Tideweald: a hand-coloured northern sea chart you can build on.",

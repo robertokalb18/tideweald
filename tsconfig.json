@@ -24,6 +24,7 @@
     "src/economy/needs.js",
     "src/economy/voyages.js",
     "src/progression/lore.js",
-    "src/world/fog.js"
+    "src/world/fog.js",
+    "src/world/river.js"
   ]
 }

@@ -3,6 +3,7 @@ import { WORKSHOPS } from './workshops.js';
 import { CHAINS, GOODS, SUPPLY_RANGE, goodsBonus, islandGoods, supplyOf } from './chains.js';
 import { TIERS, houseNeeds, houseRent, houseResidents, nextNeed } from './needs.js';
 import { knows } from '../progression/lore.js';
+import { riverEffect } from '../world/river.js';
 import { DEFENSE_ITEMS, moraleMultiplier } from '../military/frontier.js';
 import { buildingResource, charterRate, hasLandmark, tradeMultiplier } from '../progression/campaign.js';
 import { councilEffects } from '../progression/council.js';
@@ -186,6 +187,12 @@ function production(e, t, a = !1) {
             ? 'On watch \xB7 +6 defense, earlier warnings'
             : 'Perimeter secured \xB7 +4 defense',
     };
+  // v17, the river's year: the floodplain floods at high water and bears more the rest of the year; river
+  // fishing follows the water (world/river.js). In a placement preview (a) the flood itself is left out.
+  let river = riverEffect(e, t.kind, t.x, t.y, a);
+  if (river.flooded) return { ...o, resource: u, rate: 0, reason: river.note, flooded: !0, plain: !0 };
+  c > 0 && river.factor !== 1 && ((c *= river.factor), d === 'Working' && river.note && (d = river.note));
+  d === 'Working' && river.plain && (d = river.note);
   // Milestone 4: chains. A chain workshop without a supplier nearby works at half rate; boats and tools
   // from supplied workshops raise fishing, farming, sawing and quarrying.
   let chain = CHAINS[t.kind] ? supplyOf(e, t) : null,
@@ -220,6 +227,8 @@ function production(e, t, a = !1) {
     rate: c * l * s * h * m,
     capacity: o.capacity,
     supply: chain ? chain.factor : 1,
+    plain: !!river.plain,
+    riverNote: river.note,
     links: chain?.links ?? [],
     reason:
       m < 1

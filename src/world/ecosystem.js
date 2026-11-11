@@ -4,6 +4,7 @@ import { WORKSHOPS } from '../economy/workshops.js';
 import { stepFrontier } from '../military/frontier.js';
 import { SITE_KINDS, revealStep, siteReward } from './fog.js';
 import { stepVoyages } from '../economy/voyages.js';
+import { isFlooded, stepRiver } from './river.js';
 import { charterRate, constructionRate, hasLandmark, updateCampaign } from '../progression/campaign.js';
 import { councilEffects } from '../progression/council.js';
 import { bridgeDays, bridgeTiles } from '../settlement/bridges.js';
@@ -105,6 +106,11 @@ function step(e, t) {
     }
   for (let b of e.buildings) {
     let A = t;
+    // v17: a building standing in the flood does nothing, and the water takes what it held.
+    if (isFlooded(e, b)) {
+      b.stored = 0;
+      continue;
+    }
     if (!isBuilt(b)) {
       let E = buildRemaining(b) / constructionRate(e);
       ((b.buildProgress = clamp(b.buildProgress + (t * constructionRate(e)) / Ia[b.kind])),
@@ -392,6 +398,11 @@ function step(e, t) {
   }
   ((e.animals = R),
     stepFrontier(e, t),
+    stepRiver(e, t, (s, k) => {
+      (e.story.events.push({ day: Math.floor(e.time + 1e-8) + 1, title: s, text: k }),
+        e.story.events.length > 60 && e.story.events.shift(),
+        announce(e, `${s}. ${k}`));
+    }),
     stepVoyages(e, (s, k) => {
       (e.story.events.push({ day: Math.floor(e.time + 1e-8) + 1, title: s, text: k }),
         e.story.events.length > 60 && e.story.events.shift(),
