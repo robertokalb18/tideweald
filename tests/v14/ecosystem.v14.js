@@ -175,7 +175,9 @@ test("larger world and distinct building footprints allow compact housing withou
   const w = createWorld();
   assert.equal(w.cells.length, 384 * 320);
   assert.equal(COLS * ROWS, 384 * 320);
-  assert.ok(BUILDING_SCALE.cottage.size < BUILDING_SCALE.market.size * 0.5);
+  // Adapted for v17.1: the longhouse was enlarged on purpose (82 → 96, docs/SCALE.md), so the v14 bound of half the
+  // trading place became 0.55. The footprints, which this test is about, are unchanged.
+  assert.ok(BUILDING_SCALE.cottage.size < BUILDING_SCALE.market.size * 0.55);
   assert.equal(addItem(w, "cottage", 34.5 + 124, 31.5 + 104).ok, true);
   assert.equal(addItem(w, "cottage", 36.5 + 124, 31.5 + 104).ok, true);
   const gold = w.wallet.gold;

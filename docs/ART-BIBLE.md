@@ -41,9 +41,12 @@ to collect. Do not use red for decoration.
 
 ## Scale
 
-- One map tile is 58 × 29 px at 100% zoom. A longhouse sprite is 82 px wide, a guard 26 px tall.
-- Wildlife and people are drawn larger than true scale so they read on a phone; buildings keep their relative
-  sizes (`BUILDING_SIZES` in `src/world/catalog.js`).
+- One map tile is 58 × 29 px at 100% zoom. A settler is 22 px tall and is the measure of everything else;
+  a longhouse sprite is 96 px wide.
+- Every plant, animal and piece of decor takes its size from `src/render/scale.js` and must fit the rules in
+  `docs/SCALE.md` (`tests/scale.test.js`). Small things are drawn larger than life so they read on a phone,
+  but never larger than the thing they are smaller than. Buildings keep their relative sizes
+  (`BUILDING_SIZES` in `src/world/catalog.js`).
 
 ## Seasons
 

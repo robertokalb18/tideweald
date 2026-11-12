@@ -36,3 +36,6 @@ New rules from Milestone 1:
   pillar. The river's year (`world/river.js`) is a pure function of island time: save nothing for it except
   `frontier.surge`, keep its imports to `grid.js` and `seasons.js`, and keep the flood from changing terrain or
   walkability. Draw its map layers as paths (a scaled full-island image cost a frame; see `docs/V17.md`).
+- v17.1: sizes of plants, animals and map decor live in `render/scale.js` (a leaf) and are held to the proportion
+  rules in `docs/SCALE.md` by `tests/scale.test.js`. After changing a sprite sheet or rectangle, re-run
+  `tools/measure-sprites.py`. Do not give a new sprite a size anywhere else.

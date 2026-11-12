@@ -8,7 +8,8 @@ import { GRID_H, GRID_W, HAVEN } from './grid.js';
 var MAX_POPULATION = 960,
   MAP_LIMIT = 2e3,
   BUILDING_SIZES = {
-    cottage: { size: 82, radius: 0.8 },
+    // v17.1: 82 → 96, the most the 0.8-tile footprint holds. Still drawn at a smaller scale than the workshops.
+    cottage: { size: 96, radius: 0.8 },
     market: { size: 178, radius: 1.65 },
     farm: { size: 148, radius: 1.4 },
     sawmill: { size: 132, radius: 1.2 },

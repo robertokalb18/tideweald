@@ -3,6 +3,7 @@ import { mix, project, ready, sprite, tier } from './world-draw.js';
 import { bridgeTiles } from '../settlement/bridges.js';
 import { BUILDING_SIZES, GRID_H, GRID_W, HAVEN, isBuilt } from '../world/catalog.js';
 import { cellAt } from '../world/world.js';
+import { DECOR_SIZE, LIFE_SIZE } from './scale.js';
 
 var tw11F = {
   BOAT: 0,
@@ -194,7 +195,7 @@ function tw11Static(a, n, v) {
     q: 0,
   });
 }
-var tw11Size = [64, 50, 64, 44, 58, 50, 34, 40, 36, 38, 52, 38, 46, 40, 42, 214, 192];
+var tw11Size = DECOR_SIZE;
 function tw11Decor(e, season, a, n) {
   const T = tw11Classify(e),
     occ = tw11Occupied(e),
@@ -312,7 +313,7 @@ function tw11Anchors(e) {
         x: s.x + 0.5 + (k % 3) * 0.7,
         y: s.y + 0.5 + Math.floor(k / 3) * 0.8,
         spr: 21,
-        s: 22,
+        s: LIFE_SIZE.eider,
         r: 0.6,
       });
   for (const s of pick(T.coast, 16, 22, () => !0, 20))
@@ -322,7 +323,7 @@ function tw11Anchors(e) {
       x: s.x + 0.5,
       y: s.y + 0.5,
       spr: 22,
-      s: 24,
+      s: LIFE_SIZE.gull,
       r: 3.2,
       lift: 46 + tw11h(s.x, s.y, 5) * 40,
     });
@@ -334,11 +335,11 @@ function tw11Anchors(e) {
         x: s.x + 0.5 + k * 0.9,
         y: s.y + 0.5 + k * 0.3,
         spr: 24,
-        s: 36,
+        s: LIFE_SIZE.crane,
         r: 0.5,
       });
   for (const s of pick(T.coast, 2, 24, () => !0, 90))
-    list.push({ id: id++, kind: 'eagle', x: s.x + 0.5, y: s.y + 0.5, spr: 25, s: 44, r: 6, lift: 130 });
+    list.push({ id: id++, kind: 'eagle', x: s.x + 0.5, y: s.y + 0.5, spr: 25, s: LIFE_SIZE.eagle, r: 6, lift: 130 });
   for (const s of pick(T.coast, 8, 25, free, 24))
     for (let k = 0; k < 3; k++)
       list.push({
@@ -347,11 +348,11 @@ function tw11Anchors(e) {
         x: s.x + 0.5 + k * 0.6,
         y: s.y + 0.5 + (k % 2) * 0.5,
         spr: 26,
-        s: 30,
+        s: LIFE_SIZE.seal,
         r: 0.05,
       });
   for (const s of pick(T.meadow, 12, 26, free, 20))
-    list.push({ id: id++, kind: 'hare', x: s.x + 0.5, y: s.y + 0.5, spr: 27, s: 20, r: 1.4 });
+    list.push({ id: id++, kind: 'hare', x: s.x + 0.5, y: s.y + 0.5, spr: 27, s: LIFE_SIZE.hare, r: 1.4 });
   for (const s of pick(
     T.meadow,
     3,
@@ -359,7 +360,7 @@ function tw11Anchors(e) {
     (c) => free(c) && e.plants.some((p) => Math.abs(p.x - c.x) < 4 && Math.abs(p.y - c.y) < 4),
     40,
   ))
-    list.push({ id: id++, kind: 'stag', x: s.x + 0.5, y: s.y + 0.5, spr: 28, s: 44, r: 1.2 });
+    list.push({ id: id++, kind: 'stag', x: s.x + 0.5, y: s.y + 0.5, spr: 28, s: LIFE_SIZE.stag, r: 1.2 });
   for (const f of e.features) {
     if (f.kind !== 'hill' || tw11h(f.id, 1, seed) > 0.45) continue;
     for (let k = 0; k < 3; k++)
@@ -369,7 +370,7 @@ function tw11Anchors(e) {
         x: f.x + 1.2 + k * 0.8,
         y: f.y + 2 + (k % 2) * 0.7,
         spr: 20,
-        s: 25,
+        s: LIFE_SIZE.sheep,
         r: 0.8,
       });
   }
@@ -385,7 +386,7 @@ function tw11Anchors(e) {
           x: b.x + Math.cos(h * 6.28 + k) * r,
           y: b.y + Math.sin(h * 6.28 + k) * r,
           spr: h < 0.5 ? 18 : 19,
-          s: h < 0.5 ? 40 : 26,
+          s: h < 0.5 ? LIFE_SIZE.highland : LIFE_SIZE.moorit,
           r: 0.7,
         });
     if (b.kind === 'cottage' && h < 0.22)
@@ -395,7 +396,7 @@ function tw11Anchors(e) {
         x: b.x + Math.cos(h * 40) * r,
         y: b.y + Math.sin(h * 40) * r,
         spr: 17,
-        s: 31,
+        s: LIFE_SIZE.pony,
         r: 0.6,
       });
   }

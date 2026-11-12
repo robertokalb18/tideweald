@@ -197,8 +197,8 @@ function yardFlags(e) {
 }
 function drawYard(e, t, a, n, r) {
   let o = n === PALETTES.carta,
-    l = 1.05 * (TILE_W / Math.SQRT2),
-    s = 1.05 * (TILE_H / Math.SQRT2),
+    l = 1.22 * (TILE_W / Math.SQRT2),
+    s = 1.22 * (TILE_H / Math.SQRT2),
     c = a.x,
     u = a.y + 3;
   (e.save(),
@@ -231,7 +231,7 @@ function drawYard(e, t, a, n, r) {
 function drawTierBack(e, t, a, n) {
   if (n < 3) return;
   let r = a === PALETTES.carta,
-    o = t.x - 24,
+    o = t.x - 28,
     l = t.y - 2;
   ((e.strokeStyle = r ? '#4a3420' : '#5a3d22'),
     (e.lineWidth = 1.6),
@@ -258,8 +258,8 @@ function drawTierBack(e, t, a, n) {
 function drawTierFront(e, t, a, n) {
   if (n < 2) return;
   let r = a === PALETTES.carta,
-    o = t.x + 22,
-    l = t.y + 10;
+    o = t.x + 26,
+    l = t.y + 12;
   for (let s = 0; s < 3; s++)
     for (let c = 0; c < 3 - s; c++) {
       let u = o + c * 4.2 + s * 2.1,
@@ -300,8 +300,8 @@ function drawCraft(e, t, a, n, r) {
       e.stroke());
   if (a & 4) {
     // Homespun drying on a frame at the back of the yard.
-    let l = t.x + 20,
-      s = t.y - 8;
+    let l = t.x + 25,
+      s = t.y - 9;
     ((e.strokeStyle = o ? '#4a3420' : '#5a3d22'),
       (e.lineWidth = 1.2),
       e.beginPath(),
@@ -577,7 +577,7 @@ function staticsFor(e, t) {
         x0: Math.min(o.x - l * 0.56, fp ? fp.x - 4 : 1e9),
         x1: Math.max(o.x + l * 0.56, fp ? fp.x + 4 : -1e9),
         y0: o.y + l * 0.15 - l * 0.96,
-        y1: Math.max(o.y + Math.max(l * 0.22, l * 0.15 + l * 0.08) + 4, fp ? fp.y + 4 : -1e9),
+        y1: Math.max(o.y + Math.max(l * 0.22, l * 0.15 + l * 0.08) + 4, yard ? o.y + 31 : -1e9, fp ? fp.y + 4 : -1e9),
         vk: c,
         q: 0,
       }));

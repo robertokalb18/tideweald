@@ -103,3 +103,10 @@ The settlement's river now has a calendar: a thaw flood (spring Days 5–7), low
 longships land close on the flood, far at low water and not at all on ice. Also: the next objective and the
 daily change are shown on a sideways phone, the Build menu holds back buildings you cannot yet supply, and the
 resource bar opens the ledger. Direction and rules: `docs/DIRECTION.md`; findings and checks: `docs/V17.md`.
+
+## v17.1: one scale
+
+Plants, animals and map decor now share one scale measured in settler heights: mushrooms, flowers and grass
+are below a settler's chest, rune stones are a little taller than a settler, deer and cranes no longer tower
+over people, orchard trees are shorter than forest trees, and the longhouse is a sixth larger. Rules, the
+before-and-after table and what resizing cannot fix: `docs/SCALE.md`.

@@ -5,6 +5,7 @@ import { PALETTES, cartouche, compassRose, drawSerpent, drawShip, drawWhale } fr
 import { tw11Ambient, tw11DrawAmbient, tw11DrawDecor, tw11Kraken, tw11Maelstrom } from './folio.js';
 import { villageWalkers } from './roads-villagers.js';
 import { SPRITE_BANDS } from './sprite-bands.js';
+import { ANIMAL_SIZES } from './scale.js';
 import { plantLook, spriteCacheInfo, spriteRect } from './sprites.js';
 import { artStyle } from './tile-cache.js';
 import {
@@ -268,25 +269,7 @@ function silhouette(e, t) {
   }
   return ((t.poly = r ? new Float32Array(n) : null), t.poly);
 }
-var ANIMAL_SIZES = {
-    deer: 38,
-    fox: 28,
-    sheep: 29,
-    rabbit: 22,
-    duck: 23,
-    fish: 19,
-    butterfly: 14,
-    bee: 13,
-    boar: 32,
-    squirrel: 17,
-    hedgehog: 17,
-    stork: 34,
-    heron: 34,
-    otter: 26,
-    cow: 44,
-    goose: 27,
-  },
-  V8 = new WeakMap();
+var V8 = new WeakMap();
 function drawAnimal(e, t, a, n, r, o, l) {
   let s = CATALOG[t.kind],
     c = s?.atlas === 'fauna' ? 'fauna' : 'animals',

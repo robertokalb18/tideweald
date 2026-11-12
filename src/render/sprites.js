@@ -1,6 +1,7 @@
 // Recovered from the Tideweald v16.11 build. Module: render/sprites
 import { CATALOG } from '../world/catalog.js';
 import { w6 } from '../world/spatial-index.js';
+import { PLANT_DEFAULT, PLANT_SIZE, TREE_DEFAULT, TREE_SIZE } from './scale.js';
 
 function plantLook(e) {
   let t = CATALOG[e.kind],
@@ -14,20 +15,9 @@ function plantLook(e) {
       : e.kind === 'fern'
         ? ((n = 'botanical'), (r = 11))
         : e.kind === 'flowers' && e.variant > 0.5 && ((n = 'botanical'), (r = 15));
-  let o = a
-      ? e.kind === 'beech'
-        ? 98
-        : ['apple', 'pear', 'plum', 'hawthorn'].includes(e.kind)
-          ? 74
-          : 88
-      : e.kind === 'berry' || e.kind === 'hazel'
-        ? 43
-        : e.kind === 'reeds'
-          ? 39
-          : e.kind === 'lupine'
-            ? 34
-            : 30,
-    l = (a ? 19 + o * e.growth : 10 + o * e.growth) * (0.82 + e.variant * 0.36);
+  // v17.1: sizes come from one scale table (render/scale.js); young plants grow towards the full-grown size.
+  let o = a ? (TREE_SIZE[e.kind] ?? TREE_DEFAULT) : (PLANT_SIZE[e.kind] ?? PLANT_DEFAULT),
+    l = (a ? 19 + (o - 19) * e.growth : o * (0.3 + 0.7 * e.growth)) * (0.82 + e.variant * 0.36);
   return {
     atlas: n,
     index: r,
